@@ -1,1 +1,5 @@
-gitignore
+echo ".env" >> .gitignore
+git rm --cached .env
+git add .gitignore
+git commit -m "Remove .env from tracking"
+git push
