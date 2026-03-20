@@ -9,6 +9,7 @@ const transactionSchema = new mongoose.Schema({
 });
 
 const userSchema = new mongoose.Schema({
+  name: { type: String, default: "" },
   email: String,
   password: String,
   balance: { type: Number, default: 0 },
