@@ -1,4 +1,6 @@
-const API = "https://festac-app0x.onrender.com";
+const API = window.location.hostname === "localhost"
+  ? "http://localhost:5000"
+  : "https://festac-app0x.onrender.com";
 
 function saveToken(token) { localStorage.setItem("token", token); }
 function getToken() { return localStorage.getItem("token"); }
