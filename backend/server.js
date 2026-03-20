@@ -12,7 +12,7 @@ const app = express();
 
 // ✅ Middleware
 app.use(cors({
-  origin: "*", // allow all for now (later restrict)
+  origin: "https://frontend-one-sigma-37.vercel.app", // allow all for now (later restrict)
 }));
 app.use(express.json());
 
