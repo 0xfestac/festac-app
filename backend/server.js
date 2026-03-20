@@ -12,7 +12,14 @@ const app = express();
 
 // ✅ Middleware
 app.use(cors({
-  origin: "https://frontend-one-sigma-37.vercel.app", // allow all for now (later restrict)
+  origin: [
+    "https://festac-app101.vercel.app",
+    "https://festac-app0x.vercel.app",
+    "http://localhost:3000",
+    "http://127.0.0.1:5500"
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 app.use(express.json());
 
