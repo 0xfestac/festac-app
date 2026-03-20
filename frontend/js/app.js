@@ -156,6 +156,8 @@ function closeModal() {
   document.getElementById("pinModal").classList.remove("open");
 }
 
+function goSetPin() { window.location = "setpin.html"; }
+
 // ── Send ──
 async function confirmSend() {
   const toEmail = getInput("toEmail");
