@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Festac — Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#00e5a0">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="page auth-page">
+    <div class="auth-logo fade-up">
+      <div class="logo-mark">
+        <img src="icon.png" alt="Festac" class="logo-img">
+      </div>
+      <h1>Festac</h1>
+      <p>Your money, simplified</p>
+    </div>
+
+    <div class="card fade-up">
+      <p class="card-title">Welcome back</p>
+      <div class="field">
+        <label>Email address</label>
+        <input id="email" type="email" placeholder="you@example.com">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input id="password" type="password" placeholder="••••••••">
+      </div>
+      <button class="btn btn-primary" onclick="login()" style="margin-top:8px">Sign in</button>
+    </div>
+
+    <p class="auth-link fade-up">Don't have an account? <a href="register.html">Create one</a></p>
+  </div>
+
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+  </div>
+  <div id="toast" class="toast"></div>
+  <script src="js/app.js"></script>
+</body>
+</html>
