@@ -10,41 +10,34 @@ const adminRoutes = require("./routes/admin");
 
 const app = express();
 
-// middleware (must come before routes)
+// ✅ Middleware
 app.use(cors({
-  origin: [
-    "https://frontend-one-sigma-37.vercel.app",
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  origin: "*", // allow all for now (later restrict)
 }));
 app.use(express.json());
 
-// test route
+// ✅ Test route
 app.get("/", (req, res) => {
-  res.send("FESTAC IS ACTIVE 🔥");
+  res.json({ message: "FESTAC IS ACTIVE 🔥" });
 });
 
-// connect DB
+// ✅ DB connection
 mongoose.connect(process.env.MONGO_URL)
   .then(() => console.log("✅ FESTAC_DB Connected"))
   .catch(err => console.log("❌ ERROR:", err.message));
 
-// routes
+// ✅ Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/wallet", walletRoutes);
 app.use("/admin", adminRoutes);
-app.use(cors({
-  origin: "*", // for testing (later restrict it)
-}));
 
-// 404 handler
+// ✅ 404 handler (JSON)
 app.use((req, res) => {
-  res.status(404).send("Route not found");
+  res.status(404).json({ message: "Route not found" });
 });
 
-// start server
-app.listen(process.env.PORT || 5000, () => {
-  console.log("🚀 FESTAC is up and running");
+// ✅ Start server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`🚀 FESTAC running on port ${PORT}`);
 });
-
