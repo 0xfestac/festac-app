@@ -11,10 +11,8 @@ const SECRET = process.env.JWT_SECRET;
 // Register
 router.post("/register", async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-const user = new User({ name, email, password: hashed, balance: 0.99 });
 
-    const { email, password } = req.body;
+    const { name, email, password } = req.body;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -23,12 +21,8 @@ const user = new User({ name, email, password: hashed, balance: 0.99 });
 
     const hashed = await bcrypt.hash(password, 10);
 
-    const user = new User({
-      email,
-      password: hashed,
-      balance: 0.99
-    });
-
+    const user = new User({ name, email, password:        
+    hashed, balance: 0.99 });
     await user.save();
 
     res.json({ message: "User created", balance: user.balance });
