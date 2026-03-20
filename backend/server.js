@@ -13,7 +13,7 @@ const app = express();
 // middleware (must come before routes)
 app.use(cors({
   origin: [
-    "https://frontend-one-sigma-37.vercel.app",
+    "frontend-one-sigma-37.vercel.app",
     "http://localhost:3000",
     "http://127.0.0.1:5500"
   ],
