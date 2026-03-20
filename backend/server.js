@@ -14,8 +14,6 @@ const app = express();
 app.use(cors({
   origin: [
     "https://frontend-one-sigma-37.vercel.app",
-    "http://localhost:3000",
-    "http://127.0.0.1:5500"
   ],
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"]
@@ -45,4 +43,8 @@ app.use((req, res) => {
 // start server
 app.listen(process.env.PORT || 5000, () => {
   console.log("🚀 FESTAC is up and running");
+});
+
+app.get("/", (req, res) => {
+  res.send("API is running...");
 });
