@@ -11,6 +11,9 @@ const SECRET = process.env.JWT_SECRET;
 // Register
 router.post("/register", async (req, res) => {
   try {
+    const { name, email, password } = req.body;
+const user = new User({ name, email, password: hashed, balance: 0.99 });
+
     const { email, password } = req.body;
 
     const existingUser = await User.findOne({ email });
