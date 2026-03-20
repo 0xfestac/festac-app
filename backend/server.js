@@ -34,6 +34,9 @@ mongoose.connect(process.env.MONGO_URL)
 app.use("/api/auth", authRoutes);
 app.use("/api/wallet", walletRoutes);
 app.use("/admin", adminRoutes);
+app.use(cors({
+  origin: "*", // for testing (later restrict it)
+}));
 
 // 404 handler
 app.use((req, res) => {
@@ -45,6 +48,3 @@ app.listen(process.env.PORT || 5000, () => {
   console.log("🚀 FESTAC is up and running");
 });
 
-app.get("/", (req, res) => {
-  res.send("API is running...");
-});
