@@ -32,7 +32,7 @@ router.post("/register", async (req, res) => {
 
   } catch (err) {
     console.error(err);
-    res.status(500).send("Server error");
+    res.status(500).json({ message: "Server error" });
   }
 });
 
@@ -42,18 +42,26 @@ router.post("/login", async (req, res) => {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).send("User not found");
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
 
     const valid = await bcrypt.compare(password, user.password);
-    if (!valid) return res.status(400).send("Invalid password");
+    if (!valid) {
+      return res.status(400).json({ message: "Invalid password" });
+    }
 
-    const token = jwt.sign({ id: user._id, role: user.role }, SECRET, { expiresIn: "7d" });
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      SECRET,
+      { expiresIn: "7d" }
+    );
 
     res.json({ token });
 
   } catch (err) {
     console.error(err);
-    res.status(500).send("Server error");
+    res.status(500).json({ message: "Server error" });
   }
 });
 
@@ -63,23 +71,25 @@ router.post("/set-pin", auth, async (req, res) => {
     const { pin } = req.body;
 
     if (!pin || pin.length !== 4) {
-      return res.status(400).send("PIN must be 4 digits");
+      return res.status(400).json({ message: "PIN must be 4 digits" });
     }
 
     const user = await User.findById(req.user.id);
-    if (!user) return res.status(404).send("User not found");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
     const hashedPin = await bcrypt.hash(pin, 10);
     user.pin = hashedPin;
 
     await user.save();
 
-    res.send("PIN set successfully");
+    res.json({ message: "PIN set successfully" });
 
   } catch (err) {
     console.error(err);
-    res.status(500).send("Server error");
+    res.status(500).json({ message: "Server error" });
   }
 });
 
-module.exports = router;;
+module.exports = router;
