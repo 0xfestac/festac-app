@@ -11,7 +11,15 @@ const adminRoutes = require("./routes/admin");
 const app = express();
 
 // middleware (must come before routes)
-app.use(cors());
+app.use(cors({
+  origin: [
+    "https://festac-app.vercel.app",
+    "http://localhost:3000",
+    "http://127.0.0.1:5500"
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 app.use(express.json());
 
 // test route
