@@ -13,7 +13,7 @@ const app = express();
 // middleware (must come before routes)
 app.use(cors({
   origin: [
-    "https://festac-app.vercel.app",
+    "https://festac-app0x.vercel.app",
     "http://localhost:3000",
     "http://127.0.0.1:5500"
   ],
@@ -43,6 +43,6 @@ app.use((req, res) => {
 });
 
 // start server
-app.listen(5000, () => {
-  console.log("🚀 FESTAC is up and running on port 5000");
+app.listen(process.env.PORT || 5000, () => {
+  console.log("🚀 FESTAC is up and running");
 });
