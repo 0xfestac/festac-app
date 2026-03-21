@@ -7,6 +7,65 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#c9a84c">
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    .otp-inputs {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin: 8px 0;
+    }
+    .otp-box {
+      width: 46px;
+      height: 54px;
+      text-align: center;
+      font-size: 22px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      border-radius: 12px;
+      border: 1px solid var(--border-bright);
+      background: var(--surface2);
+      color: var(--gold);
+      outline: none;
+      padding: 0;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .otp-box:focus {
+      border-color: rgba(201,168,76,0.5);
+      box-shadow: 0 0 0 3px rgba(201,168,76,0.08);
+    }
+    .step-indicator {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .step-pip {
+      width: 28px; height: 4px;
+      border-radius: 2px;
+      background: var(--border-bright);
+      transition: background 0.3s;
+    }
+    .step-pip.active { background: var(--gold); }
+    .resend-btn {
+      background: none;
+      border: none;
+      color: var(--gold);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      width: auto;
+      padding: 0;
+      text-align: center;
+      display: block;
+      margin: 12px auto 0;
+    }
+    .resend-btn:disabled {
+      color: var(--text-muted);
+      cursor: not-allowed;
+    }
+    .panel { display: none; }
+    .panel.active { display: block; }
+  </style>
 </head>
 <body>
   <div class="page auth-page">
@@ -18,8 +77,15 @@
       <p>Create your free account</p>
     </div>
 
-    <div class="card fade-up">
-      <p class="card-title">Get started</p>
+    <!-- Step indicator -->
+    <div class="step-indicator fade-up">
+      <div class="step-pip active" id="pip1"></div>
+      <div class="step-pip" id="pip2"></div>
+    </div>
+
+    <!-- Step 1: Details -->
+    <div class="card fade-up panel active" id="step1">
+      <p class="card-title" id="stepTitle">Your details</p>
       <div class="field">
         <label>Full name</label>
         <input id="name" type="text" placeholder="Your full name">
@@ -30,9 +96,31 @@
       </div>
       <div class="field">
         <label>Password</label>
-        <input id="password" type="password" placeholder="Choose a strong password">
+        <input id="password" type="password" placeholder="At least 6 characters">
       </div>
-      <button class="btn btn-primary" onclick="register()" style="margin-top:8px">Create account</button>
+      <button class="btn btn-primary" onclick="sendOTP()" style="margin-top:8px">Continue</button>
+    </div>
+
+    <!-- Step 2: OTP -->
+    <div class="card fade-up panel" id="step2">
+      <p class="card-title">Verify your email</p>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;line-height:1.6">
+        We sent a 6-digit code to <strong id="emailDisplay" style="color:var(--text)"></strong>
+      </p>
+      <div class="field">
+        <label>Enter OTP</label>
+        <div class="otp-inputs">
+          <input class="otp-box" id="o1" maxlength="1" type="tel" oninput="otpInput(this, null, 'o2')">
+          <input class="otp-box" id="o2" maxlength="1" type="tel" oninput="otpInput(this, 'o1', 'o3')">
+          <input class="otp-box" id="o3" maxlength="1" type="tel" oninput="otpInput(this, 'o2', 'o4')">
+          <input class="otp-box" id="o4" maxlength="1" type="tel" oninput="otpInput(this, 'o3', 'o5')">
+          <input class="otp-box" id="o5" maxlength="1" type="tel" oninput="otpInput(this, 'o4', 'o6')">
+          <input class="otp-box" id="o6" maxlength="1" type="tel" oninput="otpInput(this, 'o5', null)">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="verifyAndRegister()" style="margin-top:8px">Create Account</button>
+      <button class="resend-btn" id="resendBtn" onclick="resendOTP()">Resend code</button>
+      <button class="btn btn-ghost" onclick="goBack()" style="margin-top:10px">Go back</button>
     </div>
 
     <p class="auth-link fade-up">Already have an account? <a href="index.html">Sign in</a></p>
@@ -41,5 +129,144 @@
   <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
   <div id="toast" class="toast"></div>
   <script src="js/app.js"></script>
+  <script>
+    let resendTimer;
+
+    function otpInput(el, prevId, nextId) {
+      if (el.value.length === 1 && nextId) {
+        document.getElementById(nextId).focus();
+      }
+      if (el.value === "" && prevId) {
+        document.getElementById(prevId).focus();
+      }
+    }
+
+    function getOTP() {
+      return ["o1","o2","o3","o4","o5","o6"].map(id => document.getElementById(id).value).join("");
+    }
+
+    function clearOTP() {
+      ["o1","o2","o3","o4","o5","o6"].forEach(id => document.getElementById(id).value = "");
+      document.getElementById("o1").focus();
+    }
+
+    function startResendTimer() {
+      let seconds = 60;
+      const btn = document.getElementById("resendBtn");
+      btn.disabled = true;
+      btn.textContent = `Resend in ${seconds}s`;
+      resendTimer = setInterval(() => {
+        seconds--;
+        btn.textContent = `Resend in ${seconds}s`;
+        if (seconds <= 0) {
+          clearInterval(resendTimer);
+          btn.disabled = false;
+          btn.textContent = "Resend code";
+        }
+      }, 1000);
+    }
+
+    async function sendOTP() {
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      if (!name) return showToast("Please enter your full name", "error");
+      if (!email) return showToast("Please enter your email", "error");
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) return showToast("Please enter a valid email address", "error");
+      if (!password || password.length < 6) return showToast("Password must be at least 6 characters", "error");
+
+      setLoading(true);
+      try {
+        const res = await fetch(`${API}/api/auth/send-otp`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        setLoading(false);
+        if (res.ok) {
+          document.getElementById("step1").classList.remove("active");
+          document.getElementById("step2").classList.add("active");
+          document.getElementById("emailDisplay").textContent = email;
+          document.getElementById("pip1").classList.remove("active");
+          document.getElementById("pip2").classList.add("active");
+          showToast("OTP sent! Check your email", "success");
+          startResendTimer();
+          setTimeout(() => document.getElementById("o1").focus(), 300);
+        } else {
+          showToast(data.message || "Failed to send OTP", "error");
+        }
+      } catch (err) {
+        setLoading(false);
+        showToast("Connection error", "error");
+      }
+    }
+
+    async function resendOTP() {
+      const email = document.getElementById("email").value.trim();
+      setLoading(true);
+      try {
+        const res = await fetch(`${API}/api/auth/send-otp`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        setLoading(false);
+        if (res.ok) {
+          clearOTP();
+          showToast("New OTP sent!", "success");
+          startResendTimer();
+        } else {
+          showToast(data.message || "Failed to resend", "error");
+        }
+      } catch (err) {
+        setLoading(false);
+        showToast("Connection error", "error");
+      }
+    }
+
+    async function verifyAndRegister() {
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      const otp = getOTP();
+
+      if (otp.length !== 6) return showToast("Enter the complete 6-digit code", "error");
+
+      setLoading(true);
+      try {
+        const res = await fetch(`${API}/api/auth/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, password, otp })
+        });
+        const data = await res.json();
+        setLoading(false);
+        if (res.ok) {
+          localStorage.setItem("userName", name);
+          showToast("Account created!", "success");
+          setTimeout(() => window.location = "index.html", 1500);
+        } else {
+          showToast(data.message || "Registration failed", "error");
+          clearOTP();
+        }
+      } catch (err) {
+        setLoading(false);
+        showToast("Connection error", "error");
+      }
+    }
+
+    function goBack() {
+      document.getElementById("step2").classList.remove("active");
+      document.getElementById("step1").classList.add("active");
+      document.getElementById("pip2").classList.remove("active");
+      document.getElementById("pip1").classList.add("active");
+      clearInterval(resendTimer);
+    }
+  </script>
 </body>
 </html>
