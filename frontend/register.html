@@ -40,7 +40,8 @@
       margin-bottom: 24px;
     }
     .step-pip {
-      width: 28px; height: 4px;
+      width: 28px;
+      height: 4px;
       border-radius: 2px;
       background: var(--border-bright);
       transition: background 0.3s;
@@ -77,15 +78,13 @@
       <p>Create your free account</p>
     </div>
 
-    <!-- Step indicator -->
     <div class="step-indicator fade-up">
       <div class="step-pip active" id="pip1"></div>
       <div class="step-pip" id="pip2"></div>
     </div>
 
-    <!-- Step 1: Details -->
     <div class="card fade-up panel active" id="step1">
-      <p class="card-title" id="stepTitle">Your details</p>
+      <p class="card-title">Your details</p>
       <div class="field">
         <label>Full name</label>
         <input id="name" type="text" placeholder="Your full name">
@@ -101,7 +100,6 @@
       <button class="btn btn-primary" onclick="sendOTP()" style="margin-top:8px">Continue</button>
     </div>
 
-    <!-- Step 2: OTP -->
     <div class="card fade-up panel" id="step2">
       <p class="card-title">Verify your email</p>
       <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;line-height:1.6">
@@ -154,10 +152,10 @@
       let seconds = 60;
       const btn = document.getElementById("resendBtn");
       btn.disabled = true;
-      btn.textContent = `Resend in ${seconds}s`;
+      btn.textContent = "Resend in " + seconds + "s";
       resendTimer = setInterval(() => {
         seconds--;
-        btn.textContent = `Resend in ${seconds}s`;
+        btn.textContent = "Resend in " + seconds + "s";
         if (seconds <= 0) {
           clearInterval(resendTimer);
           btn.disabled = false;
@@ -180,10 +178,10 @@
 
       setLoading(true);
       try {
-        const res = await fetch(`${API}/api/auth/send-otp`, {
+        const res = await fetch(API + "/api/auth/send-otp", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email })
+          body: JSON.stringify({ email: email })
         });
         const data = await res.json();
         setLoading(false);
@@ -209,10 +207,10 @@
       const email = document.getElementById("email").value.trim();
       setLoading(true);
       try {
-        const res = await fetch(`${API}/api/auth/send-otp`, {
+        const res = await fetch(API + "/api/auth/send-otp", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email })
+          body: JSON.stringify({ email: email })
         });
         const data = await res.json();
         setLoading(false);
@@ -239,17 +237,17 @@
 
       setLoading(true);
       try {
-        const res = await fetch(`${API}/api/auth/register`, {
+        const res = await fetch(API + "/api/auth/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, password, otp })
+          body: JSON.stringify({ name: name, email: email, password: password, otp: otp })
         });
         const data = await res.json();
         setLoading(false);
         if (res.ok) {
           localStorage.setItem("userName", name);
           showToast("Account created!", "success");
-          setTimeout(() => window.location = "index.html", 1500);
+          setTimeout(() => { window.location = "index.html"; }, 1500);
         } else {
           showToast(data.message || "Registration failed", "error");
           clearOTP();
@@ -269,4 +267,4 @@
     }
   </script>
 </body>
-</html>
+  </html>
