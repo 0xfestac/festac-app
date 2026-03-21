@@ -15,10 +15,8 @@
       font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: center;
     }
     .fund-tab.active { background: var(--gold-dim); border-color: rgba(201,168,76,0.4); color: var(--gold); }
-
     .fund-panel { display: none; }
     .fund-panel.active { display: block; }
-
     .payment-card {
       background: var(--surface); border: 1px solid var(--border);
       border-radius: var(--radius); overflow: hidden; margin-bottom: 14px;
@@ -44,10 +42,8 @@
     .payment-chevron { color: var(--text-muted); transition: transform 0.3s; flex-shrink: 0; }
     .payment-card.open .payment-chevron { transform: rotate(180deg); }
     .payment-card.open .payment-coin-icon { box-shadow: 0 0 12px rgba(201,168,76,0.2); }
-
     .payment-body { padding: 0 18px 18px; display: none; }
     .payment-card.open .payment-body { display: block; }
-
     .address-label { font-size: 11px; font-weight: 500; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
     .address-box {
       background: var(--surface2); border: 1px solid var(--border-bright);
@@ -67,7 +63,6 @@
     }
     .copy-btn:hover { background: rgba(201,168,76,0.2); }
     .copy-btn:active { transform: scale(0.96); }
-
     .network-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
     .network-badge {
       padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
@@ -77,7 +72,6 @@
     .badge-bnb { background: rgba(243,186,47,0.12); color: #f3ba2f; border-color: rgba(243,186,47,0.3); }
     .badge-base { background: rgba(0,82,255,0.12); color: #0052ff; border-color: rgba(0,82,255,0.3); }
     .badge-ton { background: rgba(0,136,204,0.12); color: #0088cc; border-color: rgba(0,136,204,0.3); }
-
     .warning-box {
       background: rgba(255,77,106,0.08); border: 1px solid rgba(255,77,106,0.2);
       border-radius: 10px; padding: 12px 14px; margin-top: 12px;
@@ -85,7 +79,6 @@
     }
     .warning-box svg { flex-shrink: 0; margin-top: 1px; }
     .warning-box p { font-size: 12px; color: #ff8099; line-height: 1.5; }
-
     .info-box {
       background: var(--gold-dim); border: 1px solid rgba(201,168,76,0.2);
       border-radius: 10px; padding: 12px 14px; margin-top: 12px;
@@ -93,15 +86,12 @@
     }
     .info-box svg { flex-shrink: 0; margin-top: 1px; }
     .info-box p { font-size: 12px; color: var(--gold); line-height: 1.5; }
-
     .bank-detail-row {
       display: flex; justify-content: space-between; align-items: center;
       padding: 12px 0; border-bottom: 1px solid var(--border);
     }
-    .bank-detail-row:last-child { border-bottom: none; padding-bottom: 0; }
     .bank-detail-label { font-size: 12px; color: var(--text-muted); }
     .bank-detail-value { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: var(--text); }
-
     .steps { margin-top: 14px; }
     .step { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px; }
     .step-num {
@@ -112,12 +102,20 @@
     }
     .step p { font-size: 12px; color: var(--text-mid); line-height: 1.5; padding-top: 2px; }
     .step p b { color: var(--text); font-weight: 600; }
-
     .section-note {
       font-size: 12px; color: var(--text-muted); text-align: center;
       margin-top: 16px; line-height: 1.6;
     }
-    .section-note a { color: var(--gold); text-decoration: none; }
+    .verify-form {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    .verify-form-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 13px; font-weight: 700;
+      color: var(--text); margin-bottom: 14px;
+    }
   </style>
 </head>
 <body>
@@ -139,9 +137,8 @@
         <button class="fund-tab" onclick="switchTab('friend')">👤 From Friend</button>
       </div>
 
-      <!-- ── CRYPTO PANEL ── -->
+      <!-- CRYPTO PANEL -->
       <div class="fund-panel active" id="panel-crypto">
-
         <div class="info-box fade-up">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           <p>Send crypto to any address below. Your wallet will be credited once the transaction is confirmed on-chain. Contact support after sending.</p>
@@ -204,10 +201,10 @@
         <p class="section-note">After sending, contact support with your transaction hash to get credited.</p>
       </div>
 
-      <!-- ── BANK TRANSFER PANEL ── -->
+      <!-- BANK TRANSFER PANEL -->
       <div class="fund-panel" id="panel-bank">
         <div class="payment-card fade-up" id="card-bank">
-  <div class="payment-card-header" onclick="toggleCard('bank')">
+          <div class="payment-card-header" onclick="toggleCard('bank')">
             <div class="payment-coin-icon" style="background:rgba(201,168,76,0.12);">🏦</div>
             <div class="payment-info">
               <div class="payment-name">Moniepoint</div>
@@ -216,6 +213,8 @@
             <svg class="payment-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
           <div class="payment-body">
+
+            <!-- Account details -->
             <div class="bank-detail-row">
               <span class="bank-detail-label">Bank</span>
               <span class="bank-detail-value">Moniepoint MFB</span>
@@ -232,6 +231,7 @@
               <span class="bank-detail-value">Festac Wallet</span>
             </div>
 
+            <!-- Steps -->
             <div class="steps">
               <div class="step">
                 <div class="step-num">1</div>
@@ -247,21 +247,47 @@
               </div>
               <div class="step">
                 <div class="step-num">4</div>
-                <p>Send proof of payment to support with your <b>Festac email address</b> to get credited</p>
+                <p>Come back here and fill in the verification form below</p>
               </div>
             </div>
 
-            <div class="info-box" style="margin-top:16px">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              <p>Exchange rate will be applied at time of crediting. Minimum transfer is ₦15000.</p>
+            <!-- Verification Form -->
+            <div class="verify-form">
+              <div class="verify-form-title">Submit Transfer Details</div>
+
+              <div class="field">
+                <label>Amount Sent (₦)</label>
+                <input id="fundAmount" type="number" placeholder="e.g. 15000" min="500">
+              </div>
+              <div class="field">
+                <label>Your Name (as on bank account)</label>
+                <input id="fundSenderName" type="text" placeholder="John Doe">
+              </div>
+              <div class="field">
+                <label>Your Bank Name</label>
+                <input id="fundSenderBank" type="text" placeholder="e.g. Access Bank">
+              </div>
+              <div class="field">
+                <label>Transaction Reference / Narration</label>
+                <input id="fundReference" type="text" placeholder="e.g. TRF/2024/123456">
+              </div>
+
+              <button class="btn btn-primary" onclick="submitFundRequest()" style="margin-top:8px">
+                Submit for Verification
+              </button>
+
+              <div class="info-box" style="margin-top:14px">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <p>Your wallet will be credited within 30 minutes after verification. Minimum transfer is ₦15,000.</p>
+              </div>
             </div>
+
           </div>
         </div>
-
         <p class="section-note">Transfers are processed manually. Allow up to <b style="color:var(--text)">30 minutes</b> during business hours.</p>
       </div>
 
-      <!-- ── FROM FRIEND PANEL ── -->
+      <!-- FROM FRIEND PANEL -->
       <div class="fund-panel" id="panel-friend">
         <div class="info-box fade-up">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -282,7 +308,6 @@
               <span class="address-text" id="myEmail">Loading...</span>
               <button class="copy-btn" onclick="copyAddress('myEmail', this)">Copy</button>
             </div>
-
             <div class="steps" style="margin-top:16px">
               <div class="step">
                 <div class="step-num">1</div>
@@ -301,7 +326,6 @@
                 <p>Money arrives in your wallet <b>instantly</b></p>
               </div>
             </div>
-
             <div class="info-box" style="margin-top:16px">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
               <p>Festac-to-Festac transfers are instant and free. Maximum $50 per transfer.</p>
@@ -354,7 +378,6 @@
   <div id="toast" class="toast"></div>
   <script src="js/app.js"></script>
   <script>
-    // ── Tabs ──
     function switchTab(tab) {
       document.querySelectorAll(".fund-tab").forEach((t, i) => {
         t.classList.toggle("active", ["crypto","bank","friend"][i] === tab);
@@ -363,13 +386,11 @@
       document.getElementById("panel-" + tab).classList.add("active");
     }
 
-    // ── Accordion ──
     function toggleCard(id) {
       const card = document.getElementById("card-" + id);
       if (card) card.classList.toggle("open");
     }
 
-    // ── Copy ──
     function copyAddress(elId, btn) {
       const text = document.getElementById(elId)?.textContent?.trim();
       if (!text) return;
@@ -381,7 +402,6 @@
       });
     }
 
-    // ── Load user email for friend tab ──
     function loadMyEmail() {
       const token = localStorage.getItem("token");
       if (!token) return;
@@ -390,15 +410,14 @@
         const el = document.getElementById("myEmail");
         if (el && payload.email) el.textContent = payload.email;
         else if (el) el.textContent = "Login to see your email";
-      } catch { }
+      } catch {}
     }
 
-    // ── Share link ──
     function sharePaymentLink() {
       const token = localStorage.getItem("token");
       let email = "";
       try { email = JSON.parse(atob(token.split(".")[1])).email || ""; } catch {}
-      const text = `Send me money on Festac! My email: ${email} — Sign up at https://festac-app101.vercel.app`;
+      const text = "Send me money on Festac! My email: " + email + " — Sign up at https://festac-app101.vercel.app";
       if (navigator.share) {
         navigator.share({ title: "Pay me on Festac", text });
       } else {
