@@ -1,4 +1,4 @@
-const CACHE_NAME = "festac-v1";
+const CACHE_NAME = "festac-v2";
 const ASSETS = [
   "/",
   "/index.html",
