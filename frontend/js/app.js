@@ -26,11 +26,15 @@ async function login() {
   if (!email || !password) return showToast("Fill in all fields", "error");
   setLoading(true);
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
     const res = await fetch(`${API}/api/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ email, password }),
+      signal: controller.signal
     });
+    clearTimeout(timeout);
     const data = await res.json();
     setLoading(false);
     if (data.token) {
@@ -41,10 +45,13 @@ async function login() {
     }
   } catch (err) {
     setLoading(false);
-    showToast("Connection error", "error");
+    if (err.name === "AbortError") {
+      showToast("Server is waking up, try again", "error");
+    } else {
+      showToast("Connection error", "error");
+    }
   }
 }
-
 // ── Register ──
 async function register() {
   const name = getInput("name");
