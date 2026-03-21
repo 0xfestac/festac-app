@@ -290,3 +290,38 @@ if (path.includes("transaction")) loadTransactions();
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js").then(() => console.log("SW registered"));
 }
+
+// ── Submit Fund Request ──
+async function submitFundRequest() {
+  const amount = document.getElementById("fundAmount")?.value;
+  const senderName = document.getElementById("fundSenderName")?.value;
+  const senderBank = document.getElementById("fundSenderBank")?.value;
+  const reference = document.getElementById("fundReference")?.value;
+
+  if (!amount || !senderName || !senderBank || !reference) {
+    return showToast("Please fill in all fields", "error");
+  }
+
+  try {
+    const res = await fetch(`${API}/api/wallet/fund-request`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${getToken()}`
+      },
+      body: JSON.stringify({ amount, senderName, senderBank, reference })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      showToast("Submitted! We'll credit you within 30 mins", "success");
+      document.getElementById("fundAmount").value = "";
+      document.getElementById("fundSenderName").value = "";
+      document.getElementById("fundSenderBank").value = "";
+      document.getElementById("fundReference").value = "";
+    } else {
+      showToast(data.message || "Submission failed", "error");
+    }
+  } catch (err) {
+    showToast("Connection error", "error");
+  }
+}
