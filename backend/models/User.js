@@ -10,22 +10,17 @@ const transactionSchema = new mongoose.Schema({
 
 const userSchema = new mongoose.Schema({
   name: { type: String, default: "" },
-  email: String,
-  password: String,
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
   balance: { type: Number, default: 0 },
   pin: String,
-
-  // Role-based access
   role: {
     type: String,
     enum: ["user", "admin"],
     default: "user"
   },
-
-  // Daily limit tracking
   dailySent: { type: Number, default: 0 },
   lastReset: { type: Date, default: Date.now },
-
   transactions: [transactionSchema]
 });
 
