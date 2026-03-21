@@ -1,281 +1,134 @@
-const API = "https://festac-app0x.onrender.com";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Festac — Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#c9a84c">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="page has-nav">
 
-function saveToken(token) { localStorage.setItem("token", token); }
-function getToken() { return localStorage.getItem("token"); }
-function getInput(id) { return document.getElementById(id)?.value; }
-
-function setLoading(on) {
-  const el = document.getElementById("loadingOverlay");
-  if (el) el.classList.toggle("show", on);
-  document.body.style.pointerEvents = on ? "none" : "";
-}
-
-function showToast(message, type = "default") {
-  const toast = document.getElementById("toast");
-  if (!toast) return;
-  toast.textContent = message;
-  toast.className = "toast show" + (type !== "default" ? " " + type : "");
-  clearTimeout(toast._timer);
-  toast._timer = setTimeout(() => { toast.className = "toast"; }, 3000);
-}
-
-// ── Login ──
-async function login() {
-  const email = getInput("email");
-  const password = getInput("password");
-  if (!email || !password) return showToast("Fill in all fields", "error");
-  setLoading(true);
-  try {
-    const res = await fetch(`${API}/api/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password })
-    });
-    const data = await res.json();
-    setLoading(false);
-    if (data.token) {
-      saveToken(data.token);
-      window.location = "dashboard.html";
-    } else {
-      showToast(data.message || "Login failed", "error");
-    }
-  } catch (err) {
-    setLoading(false);
-    showToast("Connection error", "error");
-  }
-}
-
-// ── Register ──
-async function register() {
-  const name = getInput("name");
-  const email = getInput("email");
-  const password = getInput("password");
-  if (!name || !email || !password) return showToast("Fill in all fields", "error");
-  setLoading(true);
-  try {
-    const res = await fetch(`${API}/api/auth/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password })
-    });
-    setLoading(false);
-    if (res.ok) {
-      localStorage.setItem("userName", name);
-      showToast("Account created!", "success");
-      setTimeout(() => window.location = "index.html", 1200);
-    } else {
-      const data = await res.json();
-      showToast(data.message || "Registration failed", "error");
-    }
-  } catch (err) {
-    setLoading(false);
-    showToast("Registration failed", "error");
-  }
-}
-
-// ── Balance ──
-let balanceHidden = false;
-let rawBalance = "0.00";
-
-async function loadBalance() {
-  try {
-    const res = await fetch(`${API}/api/wallet/balance`, {
-      headers: { Authorization: `Bearer ${getToken()}` }
-    });
-    const data = await res.json();
-    rawBalance = parseFloat(data.balance).toFixed(2);
-    const el = document.getElementById("balance");
-    if (el) el.textContent = balanceHidden ? "••••••" : rawBalance;
-  } catch (err) {
-    console.log("Balance error");
-  }
-}
-
-function toggleBalance() {
-  balanceHidden = !balanceHidden;
-  const el = document.getElementById("balance");
-  const icon = document.getElementById("eyeIcon");
-  if (el) el.textContent = balanceHidden ? "••••••" : rawBalance;
-  if (icon) {
-    icon.innerHTML = balanceHidden
-      ? `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>`
-      : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
-  }
-}
-
-// ── Greeting ──
-function loadGreeting() {
-  const el = document.getElementById("greetingName");
-  if (!el) return;
-  const name = localStorage.getItem("userName");
-  if (name) {
-    el.textContent = name;
-  } else {
-    const token = getToken();
-    if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split(".")[1]));
-        el.textContent = payload.email ? payload.email.split("@")[0] : "User";
-      } catch { el.textContent = "User"; }
-    } else {
-      el.textContent = "User";
-    }
-  }
-}
-
-// ── Avatar ──
-function changeAvatar(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  if (!file.type.startsWith("image/")) return showToast("Please choose an image", "error");
-  if (file.size > 5 * 1024 * 1024) return showToast("Image must be under 5MB", "error");
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const dataUrl = e.target.result;
-    localStorage.setItem("avatar", dataUrl);
-    document.getElementById("avatarImg").src = dataUrl;
-    showToast("Profile picture updated!", "success");
-  };
-  reader.readAsDataURL(file);
-}
-
-function loadAvatar() {
-  const saved = localStorage.getItem("avatar");
-  const img = document.getElementById("avatarImg");
-  if (saved && img) img.src = saved;
-}
-
-// ── PIN Modal ──
-function openPinModal() {
-  const toEmail = getInput("toEmail");
-  const amount = getInput("amount");
-  if (!toEmail || !amount) return showToast("Fill in all fields", "error");
-  document.getElementById("pinModal").classList.add("open");
-}
-function closeModal() {
-  document.getElementById("pinModal").classList.remove("open");
-}
-
-function goSetPin() { window.location = "setpin.html"; }
-
-// ── Send ──
-async function confirmSend() {
-  const toEmail = getInput("toEmail");
-  const amount = getInput("amount");
-  const pin = getInput("pinInput");
-  if (!toEmail || !amount || !pin) return showToast("All fields required", "error");
-  try {
-    const res = await fetch(`${API}/api/wallet/send`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
-      body: JSON.stringify({ toEmail, amount, pin })
-    });
-    const msg = await res.text();
-    if (res.ok) {
-      showToast("Transfer successful!", "success");
-      closeModal();
-      setTimeout(() => window.location = "dashboard.html", 1500);
-    } else {
-      showToast(msg || "Transfer failed", "error");
-    }
-  } catch (err) {
-    showToast("Transfer failed", "error");
-  }
-}
-
-// ── Transactions ──
-function renderTxList(data, containerId, limit = null) {
-  const list = document.getElementById(containerId);
-  if (!list) return;
-  const items = limit ? data.slice(0, limit) : data;
-  if (!items.length) {
-    list.innerHTML = `
-      <div class="tx-empty">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-        <p>No transactions yet</p>
-      </div>`;
-    return;
-  }
-  list.innerHTML = items.map(tx => {
-    const isCredit = tx.type === "credit";
-    const party = isCredit ? (tx.from || "Top-up") : (tx.to || "—");
-    const sign = isCredit ? "+" : "−";
-    const date = tx.date ? new Date(tx.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "";
-    const icon = isCredit
-      ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00c97a" stroke-width="2" stroke-linecap="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>`
-      : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff4d6a" stroke-width="2" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>`;
-    return `
-      <div class="tx">
-        <div class="tx-icon ${tx.type}">${icon}</div>
-        <div class="tx-info">
-          <div class="tx-type">${isCredit ? "Received" : "Sent"}</div>
-          <div class="tx-party">${party}</div>
+    <!-- Top Header -->
+    <div class="top-header fade-up">
+      <div class="header-left">
+        <label class="avatar-wrap" title="Change photo">
+          <img id="avatarImg" src="icon.png" class="avatar" alt="Profile">
+          <div class="avatar-overlay">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </div>
+          <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="changeAvatar(event)">
+        </label>
+        <div>
+          <div class="greeting-text">Good day,</div>
+          <div class="greeting-name" id="greetingName">Loading...</div>
         </div>
-        <div class="tx-right">
-          <div class="tx-amount ${tx.type}">${sign}$${parseFloat(tx.amount).toFixed(2)}</div>
-          <div class="tx-date">${date}</div>
+      </div>
+      <div class="notif-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        <div class="notif-dot"></div>
+      </div>
+    </div>
+
+    <!-- Balance Card -->
+    <div class="balance-card fade-up">
+      <div class="balance-label">Wallet Balance</div>
+      <div class="balance-row">
+        <div class="balance-amount">
+          <span class="currency">$</span><span id="balance">0.00</span>
         </div>
-      </div>`;
-  }).join("");
-}
+        <button class="balance-toggle" onclick="toggleBalance()" id="balanceToggle">
+          <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+      </div>
+      <div class="balance-footer">
+        <button class="bal-action-btn gold" onclick="goFund()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+          Fund
+        </button>
+        <button class="bal-action-btn outline" onclick="goSend()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Send
+        </button>
+      </div>
+    </div>
 
-async function loadTransactions() {
-  try {
-    const res = await fetch(`${API}/api/wallet/transactions`, {
-      headers: { Authorization: `Bearer ${getToken()}` }
-    });
-    const data = await res.json();
-    renderTxList(data, "list");
-  } catch (err) { console.log("Transaction error"); }
-}
+    <!-- Quick Actions -->
+    <div class="section fade-up">
+      <div class="section-header">
+        <span class="section-title">Quick Actions</span>
+      </div>
+      <div class="quick-actions">
+        <button class="quick-btn" onclick="goSend()">
+          <div class="quick-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </div>
+          <span class="quick-label">Send</span>
+        </button>
+        <button class="quick-btn" onclick="goFund()">
+          <div class="quick-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+          </div>
+          <span class="quick-label">Add Money</span>
+        </button>
+        <button class="quick-btn" onclick="goTransactions()">
+          <div class="quick-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          </div>
+          <span class="quick-label">History</span>
+        </button>
+        <button class="quick-btn" onclick="window.location='setpin.html'">
+          <div class="quick-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <span class="quick-label">Set PIN</span>
+        </button>
+      </div>
+    </div>
 
-async function loadRecentTransactions() {
-  try {
-    const res = await fetch(`${API}/api/wallet/transactions`, {
-      headers: { Authorization: `Bearer ${getToken()}` }
-    });
-    const data = await res.json();
-    renderTxList(data, "recentList", 3);
-  } catch (err) { console.log("Transaction error"); }
-}
+    <!-- Recent Transactions -->
+    <div class="section fade-up">
+      <div class="section-header">
+        <span class="section-title">Recent Transactions</span>
+        <a href="transaction.html" class="section-link">See all</a>
+      </div>
+      <div id="recentList" class="tx-list"></div>
+    </div>
 
-// ── Fund ──
-async function fundWallet() {
-  const amount = getInput("amount");
-  if (!amount) return showToast("Enter an amount", "error");
-  try {
-    const res = await fetch(`${API}/api/wallet/fund`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
-      body: JSON.stringify({ amount })
-    });
-    if (res.ok) {
-      showToast("Wallet funded!", "success");
-      setTimeout(() => window.location = "dashboard.html", 1500);
-    } else {
-      const msg = await res.text();
-      showToast(msg || "Funding failed", "error");
-    }
-  } catch (err) { showToast("Funding failed", "error"); }
-}
+  </div>
 
-// ── Navigation ──
-function goSend() { window.location = "send.html"; }
-function goFund() { window.location = "fund.html"; }
-function goTransactions() { window.location = "transaction.html"; }
-function logout() { localStorage.removeItem("token"); window.location = "index.html"; }
+  <!-- Bottom Nav -->
+  <nav class="bottom-nav">
+    <a href="dashboard.html" class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Home</span>
+    </a>
+    <a href="transaction.html" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#5a5248" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      <span>History</span>
+    </a>
+    <a href="send.html" class="nav-item-center">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </a>
+    <a href="fund.html" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#5a5248" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      <span>Fund</span>
+    </a>
+    <button class="nav-item" onclick="logout()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#5a5248" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      <span>Logout</span>
+    </button>
+  </nav>
 
-// ── Auto load ──
-const path = window.location.pathname;
-if (path.includes("dashboard")) {
-  loadBalance();
-  loadAvatar();
-  loadGreeting();
-  loadRecentTransactions();
-}
-if (path.includes("transaction")) loadTransactions();
-
-// ── Service Worker ──
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js").then(() => console.log("SW registered"));
-}
+  <div id="toast" class="toast"></div>
+  <script src="js/app.js"></script>
+</body>
+</html>
