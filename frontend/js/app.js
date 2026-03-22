@@ -20,30 +20,37 @@ function showToast(message, type = "default") {
 }
 
 // ── Lock screen on app resume ──
-let hiddenAt = null;
+function shouldLock() {
+  const path = window.location.pathname;
+  return getToken() && (
+    path.includes("dashboard") || path.includes("send") ||
+    path.includes("transaction") || path.includes("fund") ||
+    path.includes("setpin") || path.includes("admin")
+  );
+}
 
 document.addEventListener("visibilitychange", () => {
-  const path = window.location.pathname;
-  const isProtected = path.includes("dashboard") || path.includes("send") ||
-    path.includes("transaction") || path.includes("fund") ||
-    path.includes("setpin") || path.includes("admin");
-
-  if (!isProtected || !getToken()) return;
-
   if (document.hidden) {
-    hiddenAt = Date.now();
+    if (shouldLock()) localStorage.setItem("hiddenAt", Date.now());
   } else {
-    const elapsed = Date.now() - hiddenAt;
-    if (hiddenAt && elapsed > 30000) { // 30 seconds away = ask password
-      showLockScreen();
-    }
-    hiddenAt = null;
+    checkLock();
   }
 });
 
+window.addEventListener("focus", checkLock);
+window.addEventListener("pageshow", checkLock);
+
+function checkLock() {
+  if (!shouldLock()) return;
+  const hiddenAt = localStorage.getItem("hiddenAt");
+  if (!hiddenAt) return;
+  const elapsed = Date.now() - parseInt(hiddenAt);
+  localStorage.removeItem("hiddenAt");
+  if (elapsed > 30000) showLockScreen();
+}
+
 function showLockScreen() {
-  const existing = document.getElementById("lockOverlay");
-  if (existing) return;
+  if (document.getElementById("lockOverlay")) return;
 
   const overlay = document.createElement("div");
   overlay.id = "lockOverlay";
@@ -78,6 +85,8 @@ function showLockScreen() {
   document.getElementById("lockPassword").addEventListener("keydown", e => {
     if (e.key === "Enter") unlockApp();
   });
+
+  setTimeout(() => document.getElementById("lockPassword")?.focus(), 100);
 }
 
 async function unlockApp() {
@@ -101,6 +110,7 @@ async function unlockApp() {
     if (data.token) {
       saveToken(data.token);
       document.getElementById("lockOverlay")?.remove();
+      localStorage.removeItem("hiddenAt");
     } else {
       document.getElementById("lockError").textContent = "Incorrect password";
     }
@@ -112,6 +122,7 @@ async function unlockApp() {
 function lockLogout() {
   localStorage.removeItem("token");
   localStorage.removeItem("userName");
+  localStorage.removeItem("hiddenAt");
   window.location = "index.html";
 }
 
@@ -135,7 +146,6 @@ async function login() {
     setLoading(false);
     if (data.token) {
       saveToken(data.token);
-      // Check if admin and redirect accordingly
       const payload = JSON.parse(atob(data.token.split(".")[1]));
       if (payload.role === "admin") {
         window.location = "admin.html";
@@ -392,6 +402,7 @@ function goSetPin() { window.location = "setpin.html"; }
 function logout() {
   localStorage.removeItem("token");
   localStorage.removeItem("userName");
+  localStorage.removeItem("hiddenAt");
   window.location = "index.html";
 }
 
