@@ -5,7 +5,7 @@ const FundRequest = require("../models/FundRequest");
 const auth = require("../middleware/auth");
 const admin = require("../middleware/admin");
 
-// ✅ Get all pending fund requests
+// Get all fund requests
 router.get("/fund-requests", auth, admin, async (req, res) => {
   try {
     const requests = await FundRequest.find().sort({ createdAt: -1 });
@@ -15,9 +15,15 @@ router.get("/fund-requests", auth, admin, async (req, res) => {
   }
 });
 
-// ✅ Approve fund request
+// Approve fund request
 router.post("/fund-requests/:id/approve", auth, admin, async (req, res) => {
   try {
+    const { usdAmount } = req.body;
+
+    if (!usdAmount || isNaN(usdAmount) || parseFloat(usdAmount) <= 0) {
+      return res.status(400).json({ message: "Invalid USD amount" });
+    }
+
     const request = await FundRequest.findById(req.params.id);
     if (!request) return res.status(404).json({ message: "Request not found" });
     if (request.status !== "pending") {
@@ -27,15 +33,17 @@ router.post("/fund-requests/:id/approve", auth, admin, async (req, res) => {
     const user = await User.findById(request.userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    user.balance += request.amount;
+    const amount = parseFloat(usdAmount);
+    user.balance += amount;
     user.transactions.push({
       type: "credit",
-      amount: request.amount,
+      amount: amount,
       from: "Bank Transfer"
     });
     await user.save();
 
     request.status = "approved";
+    request.creditedAmount = amount;
     await request.save();
 
     res.json({ message: "Request approved and wallet credited" });
@@ -46,7 +54,7 @@ router.post("/fund-requests/:id/approve", auth, admin, async (req, res) => {
   }
 });
 
-// ✅ Reject fund request
+// Reject fund request
 router.post("/fund-requests/:id/reject", auth, admin, async (req, res) => {
   try {
     const { note } = req.body;
@@ -67,7 +75,7 @@ router.post("/fund-requests/:id/reject", auth, admin, async (req, res) => {
   }
 });
 
-// ✅ Fund user account directly
+// Fund user directly
 router.post("/fund", auth, admin, async (req, res) => {
   try {
     const { email, amount } = req.body;
@@ -82,7 +90,7 @@ router.post("/fund", auth, admin, async (req, res) => {
   }
 });
 
-// ✅ Get all users
+// Get all users
 router.get("/users", auth, admin, async (req, res) => {
   try {
     const users = await User.find().select("-password -pin");
