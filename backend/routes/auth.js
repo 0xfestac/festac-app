@@ -11,16 +11,19 @@ const nodemailer = require("nodemailer");
 const SECRET = process.env.JWT_SECRET;
 
 // ── Email transporter ──
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
 
-// ── Store OTPs temporarily ──
-const otpStore = new Map();
+// npm install resend
+
+const { Resend } = require('resend');
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Then replace transporter.sendMail(...) with:
+await resend.emails.send({
+  from: 'Festac Wallet <onboarding@resend.dev>',
+  to: email,
+  subject: 'Your Festac OTP Code',
+  html: `...your existing html...`
+});
 
 // ── Send OTP ──
 router.post("/send-otp", async (req, res) => {
