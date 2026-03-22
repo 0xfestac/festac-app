@@ -191,13 +191,3 @@ router.post("/set-pin", auth, async (req, res) => {
 });
 
 module.exports = router;
-Also update your package.json — remove nodemailer and add resend:
-"dependencies": {
-  "bcryptjs": "^2.4.3",
-  "cors": "^2.8.5",
-  "dotenv": "^16.0.0",
-  "express": "^4.18.2",
-  "jsonwebtoken": "^9.0.0",
-  "mongoose": "^7.0.0",
-  "resend": "^3.2.0"
-}
