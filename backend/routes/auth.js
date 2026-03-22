@@ -6,51 +6,36 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const auth = require("../middleware/auth");
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
 const SECRET = process.env.JWT_SECRET;
-
-// ── Email transporter ──
-
-// npm install resend
-
-const { Resend } = require('resend');
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Then replace transporter.sendMail(...) with:
-await resend.emails.send({
-  from: 'Festac Wallet <onboarding@resend.dev>',
-  to: email,
-  subject: 'Your Festac OTP Code',
-  html: `...your existing html...`
-});
+// ── Store OTPs temporarily ──
+const otpStore = new Map();
 
 // ── Send OTP ──
 router.post("/send-otp", async (req, res) => {
   try {
     const { email } = req.body;
 
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || !emailRegex.test(email)) {
       return res.status(400).json({ message: "Please enter a valid email address" });
     }
 
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "Email already registered" });
     }
 
-    // Generate 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expires = Date.now() + 10 * 60 * 1000; // 10 minutes
+    const expires = Date.now() + 10 * 60 * 1000;
 
     otpStore.set(email, { otp, expires });
 
-    // Send email
-    await transporter.sendMail({
-      from: `"Festac Wallet" <${process.env.EMAIL_USER}>`,
+    await resend.emails.send({
+      from: "Festac Wallet <onboarding@resend.dev>",
       to: email,
       subject: "Your Festac OTP Code",
       html: `
@@ -82,7 +67,6 @@ router.post("/register", async (req, res) => {
   try {
     const { name, email, password, otp } = req.body;
 
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || !emailRegex.test(email)) {
       return res.status(400).json({ message: "Please enter a valid email address" });
@@ -96,7 +80,6 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ message: "Password must be at least 6 characters" });
     }
 
-    // Verify OTP
     const stored = otpStore.get(email);
     if (!stored) {
       return res.status(400).json({ message: "OTP not found. Please request a new one" });
@@ -109,7 +92,6 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ message: "Invalid OTP. Please try again" });
     }
 
-    // Clear OTP
     otpStore.delete(email);
 
     const existingUser = await User.findOne({ email });
@@ -121,9 +103,8 @@ router.post("/register", async (req, res) => {
     const user = new User({ name: name.trim(), email, password: hashed, balance: 0.99 });
     await user.save();
 
-    // Send welcome email
-    transporter.sendMail({
-      from: `"Festac Wallet" <${process.env.EMAIL_USER}>`,
+    resend.emails.send({
+      from: "Festac Wallet <onboarding@resend.dev>",
       to: email,
       subject: "Welcome to Festac! 🎉",
       html: `
@@ -210,3 +191,13 @@ router.post("/set-pin", auth, async (req, res) => {
 });
 
 module.exports = router;
+Also update your package.json — remove nodemailer and add resend:
+"dependencies": {
+  "bcryptjs": "^2.4.3",
+  "cors": "^2.8.5",
+  "dotenv": "^16.0.0",
+  "express": "^4.18.2",
+  "jsonwebtoken": "^9.0.0",
+  "mongoose": "^7.0.0",
+  "resend": "^3.2.0"
+}
