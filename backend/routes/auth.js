@@ -6,10 +6,14 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const auth = require("../middleware/auth");
-const { Resend } = require("resend");
+const SibApiV3Sdk = require("sib-api-v3-sdk");
 
 const SECRET = process.env.JWT_SECRET;
-const resend = new Resend(process.env.RESEND_API_KEY);
+
+// ── Brevo (email) setup ──
+const client = SibApiV3Sdk.ApiClient.instance;
+client.authentications["api-key"].apiKey = process.env.BREVO_API_KEY;
+const emailApi = new SibApiV3Sdk.TransactionalEmailsApi();
 
 // ── Store OTPs temporarily ──
 const otpStore = new Map();
@@ -34,11 +38,11 @@ router.post("/send-otp", async (req, res) => {
 
     otpStore.set(email, { otp, expires });
 
-    await resend.emails.send({
-      from: "Festac Wallet <onboarding@resend.dev>",
-      to: email,
+    await emailApi.sendTransacEmail({
+      sender: { name: "Festac Wallet", email: process.env.BREVO_SENDER_EMAIL },
+      to: [{ email }],
       subject: "Your Festac OTP Code",
-      html: `
+      htmlContent: `
         <div style="font-family:sans-serif;max-width:480px;margin:auto;background:#0a0a0a;color:#f5f0e8;padding:40px;border-radius:16px;border:1px solid rgba(201,168,76,0.2)">
           <div style="text-align:center;margin-bottom:32px">
             <h1 style="font-size:28px;font-weight:800;background:linear-gradient(135deg,#f0c040,#c9a84c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:0">Festac</h1>
@@ -103,11 +107,11 @@ router.post("/register", async (req, res) => {
     const user = new User({ name: name.trim(), email, password: hashed, balance: 0.99 });
     await user.save();
 
-    resend.emails.send({
-      from: "Festac Wallet <onboarding@resend.dev>",
-      to: email,
+    emailApi.sendTransacEmail({
+      sender: { name: "Festac Wallet", email: process.env.BREVO_SENDER_EMAIL },
+      to: [{ email }],
       subject: "Welcome to Festac! 🎉",
-      html: `
+      htmlContent: `
         <div style="font-family:sans-serif;max-width:480px;margin:auto;background:#0a0a0a;color:#f5f0e8;padding:40px;border-radius:16px;border:1px solid rgba(201,168,76,0.2)">
           <div style="text-align:center;margin-bottom:32px">
             <h1 style="font-size:28px;font-weight:800;background:linear-gradient(135deg,#f0c040,#c9a84c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:0">Festac</h1>
