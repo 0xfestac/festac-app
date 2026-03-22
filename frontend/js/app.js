@@ -19,6 +19,102 @@ function showToast(message, type = "default") {
   toast._timer = setTimeout(() => { toast.className = "toast"; }, 3000);
 }
 
+// ── Lock screen on app resume ──
+let hiddenAt = null;
+
+document.addEventListener("visibilitychange", () => {
+  const path = window.location.pathname;
+  const isProtected = path.includes("dashboard") || path.includes("send") ||
+    path.includes("transaction") || path.includes("fund") ||
+    path.includes("setpin") || path.includes("admin");
+
+  if (!isProtected || !getToken()) return;
+
+  if (document.hidden) {
+    hiddenAt = Date.now();
+  } else {
+    const elapsed = Date.now() - hiddenAt;
+    if (hiddenAt && elapsed > 30000) { // 30 seconds away = ask password
+      showLockScreen();
+    }
+    hiddenAt = null;
+  }
+});
+
+function showLockScreen() {
+  const existing = document.getElementById("lockOverlay");
+  if (existing) return;
+
+  const overlay = document.createElement("div");
+  overlay.id = "lockOverlay";
+  overlay.style.cssText = `
+    position:fixed;top:0;left:0;right:0;bottom:0;
+    background:#0a0a0a;z-index:9999;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;padding:32px;
+  `;
+  overlay.innerHTML = `
+    <h2 style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;
+      background:linear-gradient(135deg,#f0c040,#c9a84c);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+      margin-bottom:8px;">Festac</h2>
+    <p style="color:#8a7e6e;font-size:14px;margin-bottom:28px;">Enter your password to continue</p>
+    <input id="lockPassword" type="password" placeholder="Password"
+      style="width:100%;max-width:320px;padding:14px 16px;border-radius:12px;
+      border:1px solid rgba(201,168,76,0.3);background:#1a1a1a;
+      color:#f5f0e8;font-size:15px;margin-bottom:14px;box-sizing:border-box;" />
+    <button onclick="unlockApp()"
+      style="width:100%;max-width:320px;padding:14px;border-radius:12px;border:none;
+      background:linear-gradient(135deg,#f0c040,#c9a84c);
+      font-family:'Syne',sans-serif;font-size:15px;font-weight:700;
+      color:#0a0a0a;cursor:pointer;">Unlock</button>
+    <p id="lockError" style="color:#ff4d6a;font-size:13px;margin-top:12px;min-height:18px;"></p>
+    <button onclick="lockLogout()"
+      style="margin-top:16px;background:none;border:none;color:#5a5248;
+      font-size:13px;cursor:pointer;text-decoration:underline;">Log out instead</button>
+  `;
+  document.body.appendChild(overlay);
+
+  document.getElementById("lockPassword").addEventListener("keydown", e => {
+    if (e.key === "Enter") unlockApp();
+  });
+}
+
+async function unlockApp() {
+  const password = document.getElementById("lockPassword")?.value;
+  if (!password) return;
+
+  const token = getToken();
+  if (!token) return;
+
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    const email = payload.email;
+
+    const res = await fetch(`${API}/api/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+
+    if (data.token) {
+      saveToken(data.token);
+      document.getElementById("lockOverlay")?.remove();
+    } else {
+      document.getElementById("lockError").textContent = "Incorrect password";
+    }
+  } catch (err) {
+    document.getElementById("lockError").textContent = "Connection error";
+  }
+}
+
+function lockLogout() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("userName");
+  window.location = "index.html";
+}
+
 // ── Login ──
 async function login() {
   const email = getInput("email");
@@ -39,7 +135,13 @@ async function login() {
     setLoading(false);
     if (data.token) {
       saveToken(data.token);
-      window.location = "dashboard.html";
+      // Check if admin and redirect accordingly
+      const payload = JSON.parse(atob(data.token.split(".")[1]));
+      if (payload.role === "admin") {
+        window.location = "admin.html";
+      } else {
+        window.location = "dashboard.html";
+      }
     } else {
       showToast(data.message || "Login failed", "error");
     }
@@ -52,18 +154,20 @@ async function login() {
     }
   }
 }
+
 // ── Register ──
 async function register() {
   const name = getInput("name");
   const email = getInput("email");
   const password = getInput("password");
-  if (!name || !email || !password) return showToast("Fill in all fields", "error");
+  const otp = getInput("otp");
+  if (!name || !email || !password || !otp) return showToast("Fill in all fields", "error");
   setLoading(true);
   try {
     const res = await fetch(`${API}/api/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password })
+      body: JSON.stringify({ name, email, password, otp })
     });
     setLoading(false);
     if (res.ok) {
@@ -129,6 +233,21 @@ function loadGreeting() {
     }
   }
 }
+
+// ── Admin button on dashboard ──
+function loadAdminButton() {
+  const token = getToken();
+  if (!token) return;
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    if (payload.role === "admin") {
+      const btn = document.getElementById("adminBtn");
+      if (btn) btn.style.display = "block";
+    }
+  } catch {}
+}
+
+function goAdmin() { window.location = "admin.html"; }
 
 // ── Avatar ──
 function changeAvatar(event) {
@@ -283,6 +402,7 @@ if (path.includes("dashboard")) {
   loadAvatar();
   loadGreeting();
   loadRecentTransactions();
+  loadAdminButton();
 }
 if (path.includes("transaction")) loadTransactions();
 
