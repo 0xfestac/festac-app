@@ -62,32 +62,43 @@
     </div>
 
     <!-- Quick Actions -->
-  <div class="quick-actions">
-  <button class="quick-btn" onclick="goSend()">
-    <div class="quick-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    <div class="quick-actions">
+      <button class="quick-btn" onclick="goSend()">
+        <div class="quick-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </div>
+        <span class="quick-label">Send</span>
+      </button>
+      <button class="quick-btn" onclick="goFund()">
+        <div class="quick-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        </div>
+        <span class="quick-label">Add Money</span>
+      </button>
+      <button class="quick-btn" onclick="goTransactions()">
+        <div class="quick-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        </div>
+        <span class="quick-label">History</span>
+      </button>
+      <button class="quick-btn" onclick="window.location='setpin.html'">
+        <div class="quick-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <span class="quick-label">Set PIN</span>
+      </button>
     </div>
-    <span class="quick-label">Send</span>
-  </button>
-  <button class="quick-btn" onclick="goFund()">
-    <div class="quick-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+
+    <!-- Admin Panel Button (only visible to admin) -->
+    <div style="padding: 0 20px;">
+      <button id="adminBtn" onclick="goAdmin()" style="display:none;
+        width:100%;padding:14px;border-radius:12px;margin-bottom:16px;
+        background:rgba(201,168,76,0.1);color:#c9a84c;
+        border:1px solid rgba(201,168,76,0.3);
+        font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;">
+        ⚙️ Admin Panel
+      </button>
     </div>
-    <span class="quick-label">Add Money</span>
-  </button>
-  <button class="quick-btn" onclick="goTransactions()">
-    <div class="quick-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-    </div>
-    <span class="quick-label">History</span>
-  </button>
-  <button class="quick-btn" onclick="window.location='setpin.html'">
-    <div class="quick-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-    </div>
-    <span class="quick-label">Set PIN</span>
-  </button>
-</div>
 
     <!-- Recent Transactions -->
     <div class="section fade-up">
