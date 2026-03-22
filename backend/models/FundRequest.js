@@ -5,6 +5,7 @@ const fundRequestSchema = new mongoose.Schema({
   userEmail: { type: String, required: true },
   userName: { type: String, required: true },
   amount: { type: Number, required: true },
+  creditedAmount: { type: Number, default: 0 },
   senderName: { type: String, required: true },
   senderBank: { type: String, required: true },
   reference: { type: String, required: true },
