@@ -163,6 +163,11 @@
       color: var(--text-muted);
       margin-top: 4px;
     }
+    .credited-amount {
+      font-size: 12px;
+      color: #00c97a;
+      margin-top: 4px;
+    }
   </style>
 </head>
 <body>
@@ -254,11 +259,16 @@
         const date = new Date(req.createdAt).toLocaleString("en-GB", {
           day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"
         });
+
         const actions = req.status === "pending" ? `
           <div class="req-actions">
             <button class="btn-approve" onclick="approveRequest('${req._id}')">✓ Approve</button>
             <button class="btn-reject" onclick="rejectRequest('${req._id}')">✕ Reject</button>
           </div>` : "";
+
+        const creditedLine = req.status === "approved" && req.creditedAmount
+          ? `<div class="credited-amount">Credited: $${req.creditedAmount.toFixed(2)}</div>`
+          : "";
 
         return `
           <div class="request-card ${req.status}" id="req-${req._id}">
@@ -269,6 +279,7 @@
               </div>
               <div>
                 <div class="req-amount">₦${req.amount.toLocaleString()}</div>
+                ${creditedLine}
                 <span class="status-badge status-${req.status}">${req.status}</span>
               </div>
             </div>
@@ -293,11 +304,20 @@
     }
 
     async function approveRequest(id) {
-      if (!confirm("Approve this request and credit the user's wallet?")) return;
+      const usdAmount = prompt("Enter USD amount to credit the user:");
+      if (usdAmount === null) return;
+      if (!usdAmount || isNaN(usdAmount) || parseFloat(usdAmount) <= 0) {
+        showToast("Invalid amount entered", "error");
+        return;
+      }
       try {
         const res = await fetch(`${API}/admin/fund-requests/${id}/approve`, {
           method: "POST",
-          headers: { Authorization: `Bearer ${getToken()}` }
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getToken()}`
+          },
+          body: JSON.stringify({ usdAmount: parseFloat(usdAmount) })
         });
         const data = await res.json();
         if (res.ok) {
