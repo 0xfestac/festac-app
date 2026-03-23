@@ -27,7 +27,6 @@
     .greeting-text { font-size: 14px; color: #aaa; }
     .greeting-name { font-size: 18px; font-weight: 700; }
 
-    /* Profile pic clickable */
     .profile-pic-wrapper {
       position: relative;
       cursor: pointer;
@@ -44,7 +43,6 @@
       display: block;
     }
 
-    /* Camera overlay on hover */
     .profile-pic-wrapper::after {
       content: '📷';
       position: absolute;
@@ -69,7 +67,7 @@
       border-radius: 12px;
     }
 
-    .balance-label { font-size: 12px; color: #aaa; }
+    .balance-label { font-size: 12px; color: #aaa; letter-spacing: 1px; }
 
     .balance-row {
       display: flex;
@@ -106,6 +104,7 @@
       font-weight: 700;
       cursor: pointer;
       border: none;
+      font-size: 15px;
     }
 
     .gold { background: #c9a84c; color: #000; }
@@ -169,15 +168,9 @@
       border-top: 1px solid #222;
     }
 
-    .nav-item {
-      font-size: 12px;
-      color: #888;
-      cursor: pointer;
-    }
-
+    .nav-item { font-size: 12px; color: #888; cursor: pointer; }
     .nav-item.active { color: #c9a84c; }
 
-    /* Upload toast */
     #uploadToast {
       display: none;
       position: fixed;
@@ -191,6 +184,7 @@
       font-size: 13px;
       font-weight: 700;
       z-index: 999;
+      white-space: nowrap;
     }
   </style>
 </head>
@@ -198,24 +192,20 @@
 <body>
 
 <!-- TOAST -->
-<div id="uploadToast">✅ Profile picture updated!</div>
+<div id="uploadToast"></div>
 
 <!-- HIDDEN FILE INPUT -->
 <input type="file" id="uploadPic" accept="image/*" hidden>
 
 <!-- HEADER -->
 <div class="top-header">
-
-  <!-- Clickable profile pic -->
   <div class="profile-pic-wrapper" onclick="document.getElementById('uploadPic').click()" title="Change profile picture">
-    <img id="profilePic" src="img/logo.png" onerror="this.src='https://via.placeholder.com/44/c9a84c/000?text=F'" />
+    <img id="profilePic" src="icon.png" onerror="this.src='https://via.placeholder.com/44/c9a84c/000?text=F'" />
   </div>
-
   <div style="flex:1;">
     <div class="greeting-text">Good day,</div>
     <div class="greeting-name" id="greetingName"></div>
   </div>
-
 </div>
 
 <!-- BALANCE -->
@@ -223,9 +213,8 @@
   <div class="balance-label">WALLET BALANCE</div>
   <div class="balance-row">
     <div class="balance-amount" id="balance">$0.00</div>
-    <button class="eye-btn" id="eyeBtn" onclick="toggleBalance()" title="Show/hide balance">👁️</button>
+    <button class="eye-btn" id="eyeBtn" onclick="toggleBalance()">👁️</button>
   </div>
-
   <div class="balance-footer">
     <button class="bal-action-btn gold" onclick="goFund()">Fund</button>
     <button class="bal-action-btn outline" onclick="goSend()">Send</button>
@@ -271,62 +260,11 @@
 
   function toggleBalance() {
     balanceHidden = !balanceHidden;
-    const el = document.getElementById("balance");
-    const btn = document.getElementById("eyeBtn");
-    if (balanceHidden) {
-      el.textContent = "••••••";
-      btn.textContent = "🙈";
-    } else {
-      el.textContent = realBalance;
-      btn.textContent = "👁️";
-    }
+    document.getElementById("balance").textContent = balanceHidden ? "••••••" : realBalance;
+    document.getElementById("eyeBtn").textContent = balanceHidden ? "🙈" : "👁️";
   }
 
-  // ── Profile picture ───────────────────────────────
-  const uploadInput = document.getElementById("uploadPic");
-  const profilePic  = document.getElementById("profilePic");
-
-  // Load saved pic from localStorage on startup
-  const savedPic = localStorage.getItem("profilePic");
-  if (savedPic) profilePic.src = savedPic;
-
-  uploadInput.addEventListener("change", async function () {
-    const file = this.files[0];
-    if (!file) return;
-
-    // Show preview immediately
-    const reader = new FileReader();
-    reader.onload = function (e) {
-      profilePic.src = e.target.result;
-      localStorage.setItem("profilePic", e.target.result); // Save locally
-    };
-    reader.readAsDataURL(file);
-
-    // Upload to backend
-    try {
-      const token = localStorage.getItem("token");
-      const formData = new FormData();
-      formData.append("avatar", file);
-
-      const res = await fetch("/api/user/avatar", {
-        method: "POST",
-        headers: { "Authorization": "Bearer " + token },
-        body: formData
-      });
-
-      if (res.ok) {
-        showToast("✅ Profile picture updated!");
-      } else {
-        showToast("⚠️ Saved locally only");
-      }
-    } catch (err) {
-      // Backend not reachable — saved locally
-      showToast("⚠️ Saved locally only");
-    }
-
-    this.value = ""; // Reset input
-  });
-
+  // ── Toast ─────────────────────────────────────────
   function showToast(msg) {
     const toast = document.getElementById("uploadToast");
     toast.textContent = msg;
@@ -334,58 +272,61 @@
     setTimeout(() => toast.style.display = "none", 3000);
   }
 
+  // ── Profile picture ───────────────────────────────
+  const uploadInput = document.getElementById("uploadPic");
+  const profilePic  = document.getElementById("profilePic");
+
+  const savedPic = localStorage.getItem("profilePic");
+  if (savedPic) profilePic.src = savedPic;
+
+  uploadInput.addEventListener("change", function () {
+    const file = this.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      profilePic.src = e.target.result;
+      localStorage.setItem("profilePic", e.target.result);
+      showToast("✅ Profile picture updated!");
+    };
+    reader.readAsDataURL(file);
+    this.value = "";
+  });
+
   // ── User info ─────────────────────────────────────
   function loadUserInfo() {
     const token = localStorage.getItem("token");
     const nameEl = document.getElementById("greetingName");
-
-    if (!token) {
-      nameEl.textContent = "Guest";
-      return;
-    }
-
+    if (!token) { nameEl.textContent = "Guest"; return; }
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
       nameEl.textContent = payload.name || payload.email || "User";
-
       if (payload.role === "admin") {
         document.getElementById("adminBtn").style.display = "block";
       }
-    } catch {
-      nameEl.textContent = "User";
-    }
+    } catch { nameEl.textContent = "User"; }
   }
 
-  // ── Balance fetch ─────────────────────────────────
+  // ── Balance — uses API from app.js, syncs with eye toggle ──
   async function loadBalance() {
-  try {
-    const token = localStorage.getItem("token");
-
-    if (!token) return;
-
-    const res = await fetch("/api/wallet/balance", {
-      headers: { "Authorization": "Bearer " + token }
-    });
-
-    console.log("Balance status:", res.status); // Check this in DevTools
-
-    if (!res.ok) {
-      console.log("Error:", await res.text());
-      return;
+    const el = document.getElementById("balance");
+    if (!el) return;
+    try {
+      const res = await fetch(`${API}/api/wallet/balance`, {
+        headers: { Authorization: `Bearer ${getToken()}` }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        realBalance = "$" + Number(data.balance).toFixed(2);
+        el.textContent = realBalance;
+      }
+    } catch (err) {
+      console.log("Balance error:", err);
     }
-
-    const data = await res.json();
-    console.log("Balance data:", data); 
-
-    realBalance = "$" + parseFloat(data.balance).toFixed(2);
-    document.getElementById("balance").textContent = realBalance;
-
-  } catch (err) {
-    console.log("Fetch error:", err);
   }
-}
+
   loadUserInfo();
   loadBalance();
+  loadTransactions();
 </script>
 
 </body>
