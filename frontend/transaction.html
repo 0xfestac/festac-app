@@ -521,40 +521,63 @@ async function shareWhatsApp() {
   const result = generatePDF();
   if (!result) return;
 
-  const pdfBlob = result.doc.output("blob");
-  const file = new File([pdfBlob], result.fileName, { type: "application/pdf" });
-
-  if (navigator.canShare && navigator.canShare({ files: [file] })) {
-    try {
-      await navigator.share({ files: [file], title: "Festac Receipt", text: "My Festac Wallet transaction receipt" });
-      return;
-    } catch {}
-  }
-
-  // Fallback
+  // Step 1 — Download the PDF
   result.doc.save(result.fileName);
-  setTimeout(() => window.open("https://wa.me/", "_blank"), 1500);
+
+  // Step 2 — Show instruction toast
+  showShareToast("PDF downloaded! Now attach it in WhatsApp");
+
+  // Step 3 — Open WhatsApp after short delay
+  setTimeout(() => {
+    window.open("https://wa.me/", "_blank");
+  }, 2000);
 }
 
 async function shareTelegram() {
   const result = generatePDF();
   if (!result) return;
 
-  const pdfBlob = result.doc.output("blob");
-  const file = new File([pdfBlob], result.fileName, { type: "application/pdf" });
-
-  if (navigator.canShare && navigator.canShare({ files: [file] })) {
-    try {
-      await navigator.share({ files: [file], title: "Festac Receipt", text: "My Festac Wallet transaction receipt" });
-      return;
-    } catch {}
-  }
-
-  // Fallback
+  // Step 1 — Download the PDF
   result.doc.save(result.fileName);
-  setTimeout(() => window.open("https://t.me/", "_blank"), 1500);
+
+  // Step 2 — Show instruction toast
+  showShareToast("PDF downloaded! Now attach it in Telegram");
+
+  // Step 3 — Open Telegram after short delay
+  setTimeout(() => {
+    window.open("https://t.me/", "_blank");
+  }, 2000);
 }
 
+function showShareToast(msg) {
+  // Create toast if it doesn't exist
+  let toast = document.getElementById("shareToast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "shareToast";
+    toast.style.cssText = `
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1a1a1a;
+      color: #fff;
+      border: 1px solid #c9a84c;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      z-index: 9999;
+      text-align: center;
+      max-width: 80%;
+      line-height: 1.5;
+    `;
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.display = "block";
+  setTimeout(() => toast.style.display = "none", 4000);
+}
 loadTransactions();
 </script>
 
