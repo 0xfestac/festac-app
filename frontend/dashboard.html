@@ -358,19 +358,32 @@
 
   // ── Balance fetch ─────────────────────────────────
   async function loadBalance() {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch("/api/wallet/balance", {
-        headers: { "Authorization": "Bearer " + token }
-      });
-      const data = await res.json();
-      realBalance = "$" + parseFloat(data.balance).toFixed(2);
-      document.getElementById("balance").textContent = realBalance;
-    } catch {
-      realBalance = "$0.00";
-    }
-  }
+  try {
+    const token = localStorage.getItem("token");
 
+    if (!token) return;
+
+    const res = await fetch("/api/wallet/balance", {
+      headers: { "Authorization": "Bearer " + token }
+    });
+
+    console.log("Balance status:", res.status); // Check this in DevTools
+
+    if (!res.ok) {
+      console.log("Error:", await res.text());
+      return;
+    }
+
+    const data = await res.json();
+    console.log("Balance data:", data); 
+
+    realBalance = "$" + parseFloat(data.balance).toFixed(2);
+    document.getElementById("balance").textContent = realBalance;
+
+  } catch (err) {
+    console.log("Fetch error:", err);
+  }
+}
   loadUserInfo();
   loadBalance();
 </script>
