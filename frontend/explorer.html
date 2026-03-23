@@ -7,209 +7,265 @@
   <link rel="stylesheet" href="css/style.css">
 
   <style>
-    .explorer-title {
+    /* ===== Branding ===== */
+    .brand-header {
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    .brand-name {
       font-family: 'Syne', sans-serif;
       font-weight: 800;
-      font-size: 20px;
-      background: var(--gold-gradient);
+      font-size: 16px;
+      background: linear-gradient(135deg,#c9a84c,#f5e6b3);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
+    /* ===== Search ===== */
+    .search-box {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .search-box input {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border-bright);
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    .search-box button {
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: none;
+      background: var(--gold-dim);
+      color: var(--gold);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* ===== Results ===== */
     .tx-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 16px;
-      margin-top: 12px;
-      position: relative;
+      margin-bottom: 12px;
     }
 
-    .tx-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(201,168,76,0.4), transparent);
+    .tx-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-bottom: 6px;
     }
 
     .tx-amount {
-      font-family: 'Syne', sans-serif;
+      font-size: 18px;
       font-weight: 800;
       color: var(--gold);
-      font-size: 18px;
-      margin-top: 10px;
+      margin-top: 6px;
     }
 
-    .copy-btn {
-      margin-left: 6px;
-      font-size: 11px;
-      padding: 4px 8px;
-      border-radius: 6px;
+    .receipt-btn {
+      margin-top: 10px;
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
       background: var(--gold-dim);
-      border: 1px solid rgba(201,168,76,0.2);
       color: var(--gold);
+      font-weight: 700;
       cursor: pointer;
+    }
+
+    /* ===== Receipt Modal ===== */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .receipt-box {
+      background: #0f0f0f;
+      padding: 20px;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 360px;
+      border: 1px solid rgba(201,168,76,0.3);
+    }
+
+    .receipt-title {
+      text-align: center;
+      font-weight: 800;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+
+    .receipt-item {
+      display: flex;
+      justify-content: space-between;
+      margin: 6px 0;
+      font-size: 13px;
+    }
+
+    .download-btn {
+      margin-top: 12px;
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg,#c9a84c,#f5e6b3);
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .empty {
+      text-align: center;
+      color: var(--text-muted);
+      margin-top: 20px;
     }
   </style>
 </head>
 
 <body>
 
-<div class="page has-nav">
-  
+<div class="page">
+
   <!-- Header -->
-  <div class="page-header fade-up">
-    <a href="dashboard.html" class="back-btn">←</a>
-    <div class="explorer-title">Explorer</div>
-    <img src="icon.png" class="page-logo" alt="Festac">
+  <div class="page-header">
+    <h2>Explorer</h2>
+    <img src="icon.png" class="page-logo">
+  </div>
+
+  <!-- Branding -->
+  <div class="brand-header">
+    <div class="brand-name">FESTAC EXPLORER</div>
   </div>
 
   <div class="page-body">
 
     <!-- Search -->
-    <div class="card fade-up">
-      <div class="field">
-        <label>Search Transaction</label>
-        <input id="searchTx" placeholder="Tx ID or Email..." oninput="autoSearch()" />
-      </div>
-    </div>
-
-    <!-- Loader -->
-    <div id="loading" style="display:none; text-align:center; margin-top:20px;">
-      <div class="spinner"></div>
+    <div class="search-box">
+      <input id="searchTx" placeholder="Search Tx ID or Email..." oninput="autoSearch()" />
+      <button onclick="searchTx()">Search</button>
     </div>
 
     <!-- Results -->
-    <div id="txResult" class="fade-up"></div>
+    <div id="txResult"></div>
 
   </div>
 </div>
 
-<!-- Bottom Nav -->
-<nav class="bottom-nav">
-  <a href="dashboard.html" class="nav-item"><span>Home</span></a>
-  <a href="transaction.html" class="nav-item"><span>History</span></a>
-  <a href="send.html" class="nav-item-center">✈</a>
-  <a href="fund.html" class="nav-item"><span>Fund</span></a>
-  <button class="nav-item" onclick="logout()"><span>Logout</span></button>
-</nav>
+<!-- Receipt Modal -->
+<div id="receiptModal" class="modal">
+  <div class="receipt-box" id="receiptBox">
+    <div class="receipt-title">FESTAC RECEIPT</div>
+    <div id="receiptContent"></div>
 
-<div id="toast" class="toast"></div>
+    <button class="download-btn" onclick="downloadPDF()">Download PDF</button>
+    <button class="download-btn" style="background:#222;color:#fff" onclick="closeReceipt()">Close</button>
+  </div>
+</div>
 
 <script src="js/app.js"></script>
 
 <script>
-let debounceTimer;
+let timeout;
+let currentTx = null;
 
-// Auto search
+/* ===== AUTO SEARCH ===== */
 function autoSearch() {
-  clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(searchTx, 400);
+  clearTimeout(timeout);
+  timeout = setTimeout(searchTx, 500);
 }
 
-// Fetch transactions
+/* ===== SEARCH ===== */
 async function searchTx() {
   const query = document.getElementById("searchTx").value.trim();
   const box = document.getElementById("txResult");
-  const loader = document.getElementById("loading");
 
   if (!query) {
     box.innerHTML = "";
     return;
   }
 
-  loader.style.display = "block";
-  box.innerHTML = "";
+  box.innerHTML = "Searching...";
 
   try {
     const res = await fetch(`${API}/api/wallet/explorer?q=${query}`);
     const data = await res.json();
 
-    loader.style.display = "none";
-
     if (!data.length) {
-      box.innerHTML = `<div class="card">No transactions found</div>`;
+      box.innerHTML = "<p class='empty'>No transactions found</p>";
       return;
     }
 
     box.innerHTML = data.map(tx => `
       <div class="tx-card">
-        
-        <div style="display:flex;justify-content:space-between;">
-          <b>Transaction</b>
-          <span style="font-size:12px;color:var(--text-muted)">
-            ${new Date(tx.createdAt).toLocaleString()}
-          </span>
-        </div>
+        <div class="tx-row"><span>ID</span><span>${tx._id}</span></div>
+        <div class="tx-row"><span>From</span><span>${tx.from}</span></div>
+        <div class="tx-row"><span>To</span><span>${tx.to}</span></div>
+        <div class="tx-row"><span>Status</span><span>${tx.status}</span></div>
+        <div class="tx-amount">$${tx.amount}</div>
 
-        <div style="margin-top:8px;font-size:13px;">
-          <b>ID:</b> ${tx._id}
-          <button onclick="copyTx('${tx._id}')" class="copy-btn">Copy</button>
-        </div>
-
-        <div style="font-size:13px;margin-top:4px;"><b>From:</b> ${tx.from}</div>
-        <div style="font-size:13px;"><b>To:</b> ${tx.to}</div>
-
-        <div class="tx-amount">$${tx.amount.toFixed(2)}</div>
-
-        <div style="margin-top:6px;">
-          <span class="status-badge status-${tx.status}">
-            ${tx.status}
-          </span>
-        </div>
-
-        <button class="btn btn-primary" style="margin-top:12px;width:100%" 
-          onclick='downloadReceipt(${JSON.stringify(tx)})'>
-          Download Receipt (PDF)
+        <button class="receipt-btn" onclick='openReceipt(${JSON.stringify(tx)})'>
+          View Receipt
         </button>
-
       </div>
     `).join("");
 
   } catch {
-    loader.style.display = "none";
-    showToast("Error fetching transactions", "error");
+    box.innerHTML = "<p class='empty'>Error fetching data</p>";
   }
 }
 
-// Copy TX ID
-function copyTx(id) {
-  navigator.clipboard.writeText(id);
-  showToast("Copied!", "success");
+/* ===== RECEIPT ===== */
+function openReceipt(tx) {
+  currentTx = tx;
+
+  document.getElementById("receiptContent").innerHTML = `
+    <div class="receipt-item"><span>ID</span><span>${tx._id}</span></div>
+    <div class="receipt-item"><span>From</span><span>${tx.from}</span></div>
+    <div class="receipt-item"><span>To</span><span>${tx.to}</span></div>
+    <div class="receipt-item"><span>Amount</span><span>$${tx.amount}</span></div>
+    <div class="receipt-item"><span>Status</span><span>${tx.status}</span></div>
+    <div class="receipt-item"><span>Date</span><span>${new Date(tx.createdAt).toLocaleString()}</span></div>
+  `;
+
+  document.getElementById("receiptModal").style.display = "flex";
 }
 
-// Download PDF Receipt
-function downloadReceipt(tx) {
-  const content = `
-FESTAC RECEIPT
---------------------------
-Transaction ID: ${tx._id}
-From: ${tx.from}
-To: ${tx.to}
-Amount: $${tx.amount.toFixed(2)}
-Status: ${tx.status}
-Date: ${new Date(tx.createdAt).toLocaleString()}
---------------------------
-`;
+function closeReceipt() {
+  document.getElementById("receiptModal").style.display = "none";
+}
 
-  const blob = new Blob([content], { type: "application/pdf" });
+/* ===== PDF DOWNLOAD (CLEAN VERSION) ===== */
+function downloadPDF() {
+  const content = document.getElementById("receiptBox").innerHTML;
 
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
+  const win = window.open("", "_blank");
 
-  a.href = url;
-  a.download = `Festac_Receipt_${tx._id}.pdf`;
+  win.document.write(`
+    <style>
+      body { font-family: Arial; padding:20px; }
+      .receipt-title { text-align:center;font-size:20px;font-weight:bold;margin-bottom:16px; }
+      .receipt-item { display:flex;justify-content:space-between;margin:8px 0; }
+    </style>
 
-  document.body.appendChild(a);
-  a.click();
+    <div class="receipt-title">FESTAC RECEIPT</div>
+    ${content}
+  `);
 
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-
-  showToast("Receipt downloaded", "success");
+  win.document.close();
+  win.print();
 }
 </script>
 
