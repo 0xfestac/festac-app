@@ -7,127 +7,307 @@
   <link rel="stylesheet" href="css/style.css">
 
   <style>
+    body {
+      background: #0a0a0a;
+      color: #fff;
+      font-family: 'Syne', sans-serif;
+      margin: 0;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      background: #121212;
+      border-bottom: 1px solid #222;
+    }
+
+    .page-header a { color: #c9a84c; font-size: 20px; text-decoration: none; }
+    .page-header h2 { margin: 0; font-size: 16px; }
+    .page-logo { width: 32px; height: 32px; border-radius: 50%; }
+
     .brand-header {
       text-align: center;
-      margin-bottom: 12px;
+      padding: 10px 0 4px;
     }
 
     .brand-name {
-      font-family: 'Syne', sans-serif;
       font-weight: 800;
-      font-size: 16px;
+      font-size: 13px;
       background: linear-gradient(135deg,#c9a84c,#f5e6b3);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      letter-spacing: 2px;
     }
 
+    .page-body { padding: 16px 16px 80px; }
+
+    /* Transaction Card */
     .tx-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 14px;
       padding: 16px;
+      margin-bottom: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tx-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+      border-radius: 4px 0 0 4px;
+    }
+
+    .tx-card.credit::before { background: #22c55e; }
+    .tx-card.debit::before { background: #ef4444; }
+
+    .tx-type-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .credit .tx-type-badge { background: rgba(34,197,94,0.15); color: #22c55e; }
+    .debit .tx-type-badge { background: rgba(239,68,68,0.15); color: #ef4444; }
+
+    .tx-amount {
+      font-size: 24px;
+      font-weight: 800;
       margin-bottom: 12px;
     }
+
+    .credit .tx-amount { color: #22c55e; }
+    .debit .tx-amount { color: #ef4444; }
 
     .tx-row {
       display: flex;
       justify-content: space-between;
-      font-size: 13px;
+      font-size: 12px;
       margin-bottom: 6px;
+      color: #aaa;
     }
 
-    .tx-amount {
-      font-size: 18px;
-      font-weight: 800;
-      color: var(--gold);
-      margin-top: 6px;
+    .tx-row span:last-child {
+      color: #fff;
+      font-weight: 600;
+      text-align: right;
+      max-width: 60%;
+      word-break: break-all;
+    }
+
+    .tx-divider {
+      border: none;
+      border-top: 1px solid #2a2a2a;
+      margin: 12px 0;
     }
 
     .receipt-btn {
-      margin-top: 10px;
       width: 100%;
       padding: 10px;
       border-radius: 10px;
-      border: none;
-      background: var(--gold-dim);
-      color: var(--gold);
+      border: 1px solid rgba(201,168,76,0.4);
+      background: rgba(201,168,76,0.1);
+      color: #c9a84c;
       font-weight: 700;
       cursor: pointer;
-    }
-
-    .modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.6);
-      display: none;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .receipt-box {
-      background: #0f0f0f;
-      padding: 20px;
-      border-radius: 16px;
-      width: 90%;
-      max-width: 360px;
-      border: 1px solid rgba(201,168,76,0.3);
-    }
-
-    .receipt-title {
-      text-align: center;
-      font-weight: 800;
-      color: var(--gold);
-      margin-bottom: 12px;
-    }
-
-    .receipt-item {
-      display: flex;
-      justify-content: space-between;
-      margin: 6px 0;
       font-size: 13px;
     }
 
-    .download-btn {
-      margin-top: 12px;
+    /* Modal */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal.show { display: flex; }
+
+    /* Bank-style receipt */
+    .receipt-box {
+      background: #fff;
+      color: #000;
       width: 100%;
+      max-width: 480px;
+      border-radius: 20px 20px 0 0;
+      padding: 24px 20px 32px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .receipt-header {
+      text-align: center;
+      border-bottom: 2px dashed #ddd;
+      padding-bottom: 16px;
+      margin-bottom: 16px;
+    }
+
+    .receipt-logo {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      margin-bottom: 8px;
+    }
+
+    .receipt-bank-name {
+      font-size: 18px;
+      font-weight: 800;
+      color: #c9a84c;
+      letter-spacing: 2px;
+    }
+
+    .receipt-tag {
+      font-size: 11px;
+      color: #888;
+      margin-top: 2px;
+    }
+
+    .receipt-status {
+      display: inline-block;
+      background: #dcfce7;
+      color: #16a34a;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      margin: 10px 0;
+    }
+
+    .receipt-amount {
+      font-size: 32px;
+      font-weight: 800;
+      color: #000;
+      margin: 8px 0;
+    }
+
+    .receipt-body {
+      margin-bottom: 16px;
+    }
+
+    .receipt-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 13px;
+    }
+
+    .receipt-row .label { color: #888; }
+    .receipt-row .value { font-weight: 700; color: #000; text-align: right; max-width: 60%; word-break: break-all; }
+
+    .receipt-footer {
+      text-align: center;
+      border-top: 2px dashed #ddd;
+      padding-top: 14px;
+      font-size: 11px;
+      color: #aaa;
+    }
+
+    /* Action buttons */
+    .receipt-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .receipt-actions button {
       padding: 12px;
-      background: linear-gradient(135deg,#c9a84c,#f5e6b3);
-      border: none;
       border-radius: 10px;
+      border: none;
       font-weight: 700;
       cursor: pointer;
+      font-size: 13px;
     }
+
+    .btn-download { background: #c9a84c; color: #000; grid-column: 1 / -1; }
+    .btn-whatsapp { background: #25D366; color: #fff; }
+    .btn-telegram { background: #0088cc; color: #fff; }
+    .btn-close { background: #f0f0f0; color: #000; grid-column: 1 / -1; }
+
+    .empty-state {
+      text-align: center;
+      color: #555;
+      padding: 40px 20px;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      background: #121212;
+      padding: 8px 0;
+      border-top: 1px solid #222;
+    }
+
+    .nav-item { font-size: 12px; color: #888; cursor: pointer; }
+    .nav-item.active { color: #c9a84c; }
   </style>
 </head>
 
 <body>
 
-<div class="page has-nav">
+<div class="page-header">
+  <a href="dashboard.html">←</a>
+  <h2>Transactions</h2>
+  <img src="icon.png" class="page-logo" onerror="this.style.display='none'">
+</div>
 
-  <div class="page-header">
-    <a href="dashboard.html">←</a>
-    <h2>Transactions</h2>
-    <img src="icon.png" class="page-logo">
-  </div>
+<div class="brand-header">
+  <div class="brand-name">FESTAC WALLET</div>
+</div>
 
-  <div class="brand-header">
-    <div class="brand-name">FESTAC WALLET</div>
-  </div>
-
-  <div class="page-body">
-    <div id="list"></div>
-  </div>
+<div class="page-body">
+  <div id="list"></div>
 </div>
 
 <!-- RECEIPT MODAL -->
 <div id="receiptModal" class="modal">
   <div class="receipt-box" id="receiptBox">
-    <div class="receipt-title">FESTAC RECEIPT</div>
-    <div id="receiptContent"></div>
 
-    <button class="download-btn" onclick="downloadPDF()">Download PDF</button>
-    <button class="download-btn" style="background:#222;color:#fff" onclick="closeReceipt()">Close</button>
+    <div class="receipt-header">
+      <img src="icon.png" class="receipt-logo" onerror="this.style.display='none'">
+      <div class="receipt-bank-name">FESTAC WALLET</div>
+      <div class="receipt-tag">Transaction Receipt</div>
+      <div class="receipt-status">✓ SUCCESSFUL</div>
+      <div class="receipt-amount" id="r-amount"></div>
+    </div>
+
+    <div class="receipt-body" id="receiptContent"></div>
+
+    <div class="receipt-footer">
+      Festac Wallet · Your money, simplified<br>
+      <span id="r-footer-date"></span>
+    </div>
+
+    <div class="receipt-actions">
+      <button class="btn-download" onclick="downloadReceipt()">⬇️ Download Receipt</button>
+      <button class="btn-whatsapp" onclick="shareWhatsApp()">WhatsApp</button>
+      <button class="btn-telegram" onclick="shareTelegram()">Telegram</button>
+      <button class="btn-close" onclick="closeReceipt()">Close</button>
+    </div>
+
   </div>
+</div>
+
+<div class="bottom-nav">
+  <div class="nav-item" onclick="location='dashboard.html'">Home</div>
+  <div class="nav-item active">History</div>
+  <div class="nav-item" onclick="location='send.html'">Send</div>
+  <div class="nav-item" onclick="location='fund.html'">Fund</div>
+  <div class="nav-item" onclick="logout()">Logout</div>
 </div>
 
 <script src="js/app.js"></script>
@@ -145,76 +325,195 @@ async function loadTransactions() {
     const list = document.getElementById("list");
 
     if (!data.length) {
-      list.innerHTML = "<p>No transactions yet</p>";
+      list.innerHTML = `<div class="empty-state">💸 No transactions yet</div>`;
       return;
     }
 
-    list.innerHTML = data.map(tx => `
-      <div class="tx-card">
-        <div class="tx-row"><span>From</span><span>${tx.from}</span></div>
-        <div class="tx-row"><span>To</span><span>${tx.to}</span></div>
-        <div class="tx-row"><span>Status</span><span>${tx.status}</span></div>
-        <div class="tx-amount">$${tx.amount}</div>
-        <button class="receipt-btn" onclick='openReceipt(${JSON.stringify(tx)})'>
-          Download Receipt
-        </button>
-      </div>
-    `).join("");
+    // Get logged in user email from token
+    const token = getToken();
+    let myEmail = "";
+    try {
+      myEmail = JSON.parse(atob(token.split('.')[1])).email || "";
+    } catch {}
 
-  } catch {
-    showToast("Failed to load","error");
+    list.innerHTML = data.map(tx => {
+      const isCredit = tx.type === "credit";
+      const sign = isCredit ? "+" : "-";
+      const typeClass = isCredit ? "credit" : "debit";
+      const typeLabel = isCredit ? "RECEIVED" : "SENT";
+
+      const counterparty = isCredit
+        ? (tx.from || "Unknown")
+        : (tx.to || "Unknown");
+
+      const label = isCredit ? "From" : "To";
+
+      // Use tx.date (from your User model)
+      const dateStr = tx.date
+        ? new Date(tx.date).toLocaleString("en-GB", {
+            day: "2-digit", month: "short", year: "numeric",
+            hour: "2-digit", minute: "2-digit"
+          })
+        : "No date";
+
+      return `
+        <div class="tx-card ${typeClass}">
+          <span class="tx-type-badge">${typeLabel}</span>
+          <div class="tx-amount">${sign}$${Number(tx.amount).toFixed(2)}</div>
+          <div class="tx-row"><span>${label}</span><span>${counterparty}</span></div>
+          <div class="tx-row"><span>Date</span><span>${dateStr}</span></div>
+          <hr class="tx-divider">
+          <button class="receipt-btn" onclick='openReceipt(${JSON.stringify(tx)}, "${myEmail}")'>
+            🧾 View Receipt
+          </button>
+        </div>
+      `;
+    }).join("");
+
+  } catch (err) {
+    console.log("Transaction error:", err);
+    document.getElementById("list").innerHTML = `<div class="empty-state">Failed to load transactions</div>`;
   }
 }
 
-function openReceipt(tx) {
+function openReceipt(tx, myEmail) {
   currentTx = tx;
+  const isCredit = tx.type === "credit";
+
+  const dateStr = tx.date
+    ? new Date(tx.date).toLocaleString("en-GB", {
+        day: "2-digit", month: "short", year: "numeric",
+        hour: "2-digit", minute: "2-digit"
+      })
+    : "No date";
+
+  const sender = isCredit ? (tx.from || "Unknown") : (myEmail || "You");
+  const receiver = isCredit ? (myEmail || "You") : (tx.to || "Unknown");
+
+  document.getElementById("r-amount").textContent =
+    `${isCredit ? "+" : "-"}$${Number(tx.amount).toFixed(2)}`;
+
+  document.getElementById("r-footer-date").textContent = dateStr;
 
   document.getElementById("receiptContent").innerHTML = `
-    <div class="receipt-item"><span>ID</span><span>${tx._id}</span></div>
-    <div class="receipt-item"><span>From</span><span>${tx.from}</span></div>
-    <div class="receipt-item"><span>To</span><span>${tx.to}</span></div>
-    <div class="receipt-item"><span>Amount</span><span>$${tx.amount}</span></div>
-    <div class="receipt-item"><span>Status</span><span>${tx.status}</span></div>
-    <div class="receipt-item"><span>Date</span><span>${new Date(tx.createdAt).toLocaleString()}</span></div>
+    <div class="receipt-row">
+      <span class="label">Transaction ID</span>
+      <span class="value">${tx._id || "N/A"}</span>
+    </div>
+    <div class="receipt-row">
+      <span class="label">Type</span>
+      <span class="value">${isCredit ? "Credit" : "Debit"}</span>
+    </div>
+    <div class="receipt-row">
+      <span class="label">Sender</span>
+      <span class="value">${sender}</span>
+    </div>
+    <div class="receipt-row">
+      <span class="label">Receiver</span>
+      <span class="value">${receiver}</span>
+    </div>
+    <div class="receipt-row">
+      <span class="label">Amount</span>
+      <span class="value">$${Number(tx.amount).toFixed(2)}</span>
+    </div>
+    <div class="receipt-row">
+      <span class="label">Status</span>
+      <span class="value">✓ Successful</span>
+    </div>
+    <div class="receipt-row">
+      <span class="label">Date & Time</span>
+      <span class="value">${dateStr}</span>
+    </div>
   `;
 
-  document.getElementById("receiptModal").style.display = "flex";
+  document.getElementById("receiptModal").classList.add("show");
 }
 
 function closeReceipt() {
-  document.getElementById("receiptModal").style.display = "none";
+  document.getElementById("receiptModal").classList.remove("show");
 }
 
-function downloadPDF() {
-  const content = document.getElementById("receiptBox").innerHTML;
+function getReceiptText() {
+  if (!currentTx) return "";
+  const isCredit = currentTx.type === "credit";
+  const dateStr = currentTx.date
+    ? new Date(currentTx.date).toLocaleString()
+    : "No date";
+  return `
+🏦 FESTAC WALLET RECEIPT
+━━━━━━━━━━━━━━━━━━━━━
+✅ Status: Successful
+💰 Amount: ${isCredit ? "+" : "-"}$${Number(currentTx.amount).toFixed(2)}
+📤 Sender: ${isCredit ? (currentTx.from || "Unknown") : "You"}
+📥 Receiver: ${isCredit ? "You" : (currentTx.to || "Unknown")}
+🕐 Date: ${dateStr}
+🆔 ID: ${currentTx._id || "N/A"}
+━━━━━━━━━━━━━━━━━━━━━
+Festac Wallet · Your money, simplified
+  `.trim();
+}
 
-  const win = window.open("", "_blank");
+function shareWhatsApp() {
+  const text = encodeURIComponent(getReceiptText());
+  window.open(`https://wa.me/?text=${text}`, "_blank");
+}
 
-  win.document.write(`
-    <style>
-      body {
-        font-family: Arial;
-        padding: 20px;
-      }
-      .receipt-title {
-        font-size: 20px;
-        font-weight: bold;
-        text-align: center;
-        margin-bottom: 16px;
-      }
-      .receipt-item {
-        display: flex;
-        justify-content: space-between;
-        margin: 8px 0;
-      }
-    </style>
+function shareTelegram() {
+  const text = encodeURIComponent(getReceiptText());
+  window.open(`https://t.me/share/url?url=&text=${text}`, "_blank");
+}
 
-    <div class="receipt-title">FESTAC RECEIPT</div>
-    ${content}
-  `);
+function downloadReceipt() {
+  if (!currentTx) return;
+  const isCredit = currentTx.type === "credit";
+  const dateStr = currentTx.date
+    ? new Date(currentTx.date).toLocaleString()
+    : "No date";
 
-  win.document.close();
-  win.print();
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Festac Receipt</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 400px; margin: 40px auto; padding: 20px; }
+    .header { text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 16px; margin-bottom: 16px; }
+    .bank-name { font-size: 20px; font-weight: 800; color: #c9a84c; letter-spacing: 2px; }
+    .tag { color: #888; font-size: 12px; }
+    .status { background: #dcfce7; color: #16a34a; padding: 4px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; display: inline-block; margin: 8px 0; }
+    .amount { font-size: 36px; font-weight: 800; margin: 8px 0; }
+    .row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+    .label { color: #888; }
+    .value { font-weight: 700; text-align: right; }
+    .footer { text-align: center; border-top: 2px dashed #ccc; padding-top: 14px; font-size: 12px; color: #aaa; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="bank-name">FESTAC WALLET</div>
+    <div class="tag">Transaction Receipt</div>
+    <div class="status">✓ SUCCESSFUL</div>
+    <div class="amount">${isCredit ? "+" : "-"}$${Number(currentTx.amount).toFixed(2)}</div>
+  </div>
+  <div class="row"><span class="label">Transaction ID</span><span class="value">${currentTx._id || "N/A"}</span></div>
+  <div class="row"><span class="label">Type</span><span class="value">${isCredit ? "Credit" : "Debit"}</span></div>
+  <div class="row"><span class="label">Sender</span><span class="value">${isCredit ? (currentTx.from || "Unknown") : "You"}</span></div>
+  <div class="row"><span class="label">Receiver</span><span class="value">${isCredit ? "You" : (currentTx.to || "Unknown")}</span></div>
+  <div class="row"><span class="label">Amount</span><span class="value">$${Number(currentTx.amount).toFixed(2)}</span></div>
+  <div class="row"><span class="label">Status</span><span class="value">✓ Successful</span></div>
+  <div class="row"><span class="label">Date & Time</span><span class="value">${dateStr}</span></div>
+  <div class="footer">Festac Wallet · Your money, simplified<br>${dateStr}</div>
+</body>
+</html>`;
+
+  const blob = new Blob([html], { type: "text/html" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `festac-receipt-${currentTx._id || Date.now()}.html`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 loadTransactions();
