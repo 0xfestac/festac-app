@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FESTAC Explorer</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="page">
+  <h2>🔎 Transaction Explorer</h2>
+
+  <input id="searchTx" placeholder="Enter Tx ID or Email" />
+  <button onclick="searchTx()">Search</button>
+
+  <div id="txResult"></div>
+</div>
+
+<script src="js/app.js"></script>
+<script>
+async function searchTx() {
+  const query = document.getElementById("searchTx").value;
+
+  const res = await fetch(`${API}/api/wallet/explorer?q=${query}`);
+  const data = await res.json();
+
+  const box = document.getElementById("txResult");
+
+  if (!data.length) {
+    box.innerHTML = "No transactions found";
+    return;
+  }
+
+  box.innerHTML = data.map(tx => `
+    <div class="tx">
+      <p><b>ID:</b> ${tx._id}</p>
+      <p><b>From:</b> ${tx.from}</p>
+      <p><b>To:</b> ${tx.to}</p>
+      <p><b>Amount:</b> $${tx.amount}</p>
+      <p><b>Status:</b> ${tx.status}</p>
+    </div>
+  `).join("");
+}
+</script>
+
+</body>
+</html>
