@@ -184,8 +184,8 @@
         <button class="copy-btn" onclick="copyAddress('addr-ton', this)">Copy</button>
       </div>
 
-      <input id="tonAmount" placeholder="Amount (TON)">
-      <input id="tonHash" placeholder="Transaction Hash">
+      <input id="tonAmount" placeholder="Amount (TON)" required>
+      <input id="tonHash" placeholder="Transaction Hash" required>
 
       <button class="btn-primary" onclick="submitCryptoRequest('TON')">
         Submit
@@ -206,8 +206,8 @@
         <button class="copy-btn" onclick="copyAddress('addr-usdt', this)">Copy</button>
       </div>
 
-      <input id="usdtAmount" placeholder="Amount (USDT)">
-      <input id="usdtHash" placeholder="Transaction Hash">
+      <input id="usdtAmount" placeholder="Amount (USDT)" required>
+      <input id="usdtHash" placeholder="Transaction Hash" required>
 
       <button class="btn-primary" onclick="submitCryptoRequest('USDT')">
         Submit
@@ -255,9 +255,9 @@
       </div>
 
       <!-- Inputs -->
-      <input id="fundAmount" type="number" placeholder="Amount (₦)" min="15000">
-      <input id="fundSenderName" placeholder="Your Name (Bank)">
-      <input id="fundSenderBank" placeholder="Your Bank Name">
+      <input id="fundAmount" type="number" placeholder="Amount (₦)" min="15000" required>
+      <input id="fundSenderName" placeholder="Your Name (Bank)" required>
+      <input id="fundSenderBank" placeholder="Your Bank Name" required>
       <input id="fundReference" placeholder="Transaction Reference">
 
       <!-- Button -->
