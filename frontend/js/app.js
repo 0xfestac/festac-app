@@ -1,317 +1,233 @@
-const API = "https://festac-app0x.onrender.com";
+// ===== CONFIG =====
+const API = "https://festac-api.onrender.com"; // change if needed
 
-// ── Storage Helpers ──
-function saveToken(token) { localStorage.setItem("token", token); }
-function getToken() { return localStorage.getItem("token"); }
-function getInput(id) { return document.getElementById(id)?.value; }
-
-// ── UI Helpers ──
-function setLoading(on) {
-  const el = document.getElementById("loadingOverlay");
-  if (el) el.classList.toggle("show", on);
-  document.body.style.pointerEvents = on ? "none" : "";
+// ===== TOKEN HELPERS =====
+function getToken() {
+  return localStorage.getItem("token");
 }
 
-function showToast(message, type = "default") {
-  const toast = document.getElementById("toast");
-  if (!toast) return;
-  toast.textContent = message;
-  toast.className = "toast show" + (type !== "default" ? " " + type : "");
-  clearTimeout(toast._timer);
-  toast._timer = setTimeout(() => { toast.className = "toast"; }, 3000);
+function setToken(token) {
+  localStorage.setItem("token", token);
 }
 
-// ── Lock Screen ──
-function shouldLock() {
-  const path = window.location.pathname;
-  return getToken() && (
-    path.includes("dashboard") ||
-    path.includes("send") ||
-    path.includes("transaction") ||
-    path.includes("fund") ||
-    path.includes("setpin") ||
-    path.includes("admin")
-  );
-}
-
-document.addEventListener("visibilitychange", () => {
-  if (document.hidden) {
-    if (shouldLock()) localStorage.setItem("hiddenAt", Date.now());
-  } else {
-    checkLock();
-  }
-});
-
-window.addEventListener("focus", checkLock);
-window.addEventListener("pageshow", checkLock);
-
-function checkLock() {
-  if (!shouldLock()) return;
-
-  const hiddenAt = localStorage.getItem("hiddenAt");
-  if (!hiddenAt) return;
-
-  const elapsed = Date.now() - parseInt(hiddenAt);
-  localStorage.removeItem("hiddenAt");
-
-  if (elapsed > 30000) showLockScreen();
-}
-
-function showLockScreen() {
-  if (document.getElementById("lockOverlay")) return;
-
-  const overlay = document.createElement("div");
-  overlay.id = "lockOverlay";
-  overlay.style.cssText = `
-    position:fixed;
-    top:0;left:0;right:0;bottom:0;
-    background:#0a0a0a;
-    z-index:9999;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:20px;
-  `;
-
-  overlay.innerHTML = `
-    <div style="width:100%;max-width:340px;text-align:center;">
-
-      <h1 style="
-        font-family:'Syne',sans-serif;
-        font-size:32px;
-        font-weight:800;
-        color:#c9a84c;
-        margin-bottom:10px;
-      ">Festac</h1>
-
-      <p style="color:#aaa;margin-bottom:30px;">
-        Enter your password to continue
-      </p>
-
-      <input id="lockPassword" type="password" placeholder="Password"
-        style="
-          width:100%;
-          padding:16px;
-          border-radius:14px;
-          border:1px solid #222;
-          background:#121212;
-          color:#fff;
-          margin-bottom:20px;
-          outline:none;
-        " />
-
-      <button onclick="unlockApp()"
-        style="
-          width:100%;
-          padding:14px;
-          border-radius:14px;
-          background:#c9a84c;
-          color:#000;
-          font-weight:700;
-          border:none;
-          margin-bottom:12px;
-          cursor:pointer;
-        ">
-        Unlock
-      </button>
-
-      <p id="lockError" style="color:#ff4d4d;margin-bottom:10px;"></p>
-
-      <button onclick="lockLogout()"
-        style="
-          background:none;
-          border:none;
-          color:#c9a84c;
-          cursor:pointer;
-        ">
-        Log out instead
-      </button>
-
-    </div>
-  `;
-
-  document.body.appendChild(overlay);
-}
-
-async function unlockApp() {
-  const password = document.getElementById("lockPassword")?.value;
-  const token = getToken();
-
-  if (!password || !token) return;
-
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    const email = payload.email;
-
-    const res = await fetch(`${API}/api/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password })
-    });
-
-    const data = await res.json();
-
-    if (data.token) {
-      saveToken(data.token);
-      document.getElementById("lockOverlay")?.remove();
-    } else {
-      document.getElementById("lockError").textContent = "Incorrect password";
-    }
-
-  } catch {
-    document.getElementById("lockError").textContent = "Connection error";
-  }
-}
-
-function lockLogout() {
-  localStorage.clear();
+function logout() {
+  localStorage.removeItem("token");
   window.location = "index.html";
 }
 
-// ── LOGIN ──
+// ===== UI HELPERS =====
+function showToast(message, type = "info") {
+  const toast = document.getElementById("toast");
+  if (!toast) return;
+
+  toast.textContent = message;
+  toast.className = "toast show " + type;
+
+  setTimeout(() => {
+    toast.className = "toast";
+  }, 3000);
+}
+
+function showLoading(show = true) {
+  const el = document.getElementById("loadingOverlay");
+  if (!el) return;
+  el.style.display = show ? "flex" : "none";
+}
+
+// ===== AUTH =====
 async function login() {
-  const email = getInput("email");
-  const password = getInput("password");
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
 
   if (!email || !password) {
-    return showToast("Fill in all fields", "error");
+    return showToast("Enter email and password", "error");
   }
 
-  setLoading(true);
+  showLoading(true);
 
   try {
     const res = await fetch(`${API}/api/auth/login`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({ email, password })
     });
 
     const data = await res.json();
-    setLoading(false);
 
-    if (data.token) {
-      saveToken(data.token);
-      window.location = "dashboard.html";
+    if (res.ok) {
+      setToken(data.token);
+      showToast("Login successful", "success");
+
+      setTimeout(() => {
+        window.location = "dashboard.html";
+      }, 800);
     } else {
       showToast(data.message || "Login failed", "error");
     }
+  } catch (err) {
+    showToast("Connection error", "error");
+  }
 
+  showLoading(false);
+}
+
+// ===== SEND MONEY FLOW =====
+let sendData = {};
+
+function openPinModal() {
+  const email = document.getElementById("toEmail").value.trim();
+  const amount = parseFloat(document.getElementById("amount").value);
+
+  if (!email || !amount) {
+    return showToast("Fill all fields", "error");
+  }
+
+  if (amount > 50) {
+    return showToast("Max transfer is $50", "error");
+  }
+
+  sendData = { email, amount };
+
+  document.getElementById("pinModal").style.display = "flex";
+}
+
+function closeModal() {
+  document.getElementById("pinModal").style.display = "none";
+}
+
+async function confirmSend() {
+  const pin = document.getElementById("pinInput").value;
+
+  if (pin.length !== 4) {
+    return showToast("Enter 4-digit PIN", "error");
+  }
+
+  try {
+    const res = await fetch(`${API}/api/wallet/send`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${getToken()}`
+      },
+      body: JSON.stringify({
+        toEmail: sendData.email,
+        amount: sendData.amount,
+        pin
+      })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      showToast("Transfer successful", "success");
+      closeModal();
+
+      document.getElementById("toEmail").value = "";
+      document.getElementById("amount").value = "";
+      document.getElementById("pinInput").value = "";
+    } else {
+      showToast(data.message || "Transfer failed", "error");
+    }
   } catch {
-    setLoading(false);
     showToast("Connection error", "error");
   }
 }
 
-// ── REGISTER ──
-async function register() {
-  const name = getInput("name");
-  const email = getInput("email");
-  const password = getInput("password");
-  const otp = getInput("otp");
-
-  if (!name || !email || !password || !otp) {
-    return showToast("Fill in all fields", "error");
-  }
-
-  setLoading(true);
+// ===== TRANSACTIONS =====
+async function loadTransactions() {
+  const list = document.getElementById("list");
+  if (!list) return;
 
   try {
-    const res = await fetch(`${API}/api/auth/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password, otp })
-    });
-
-    setLoading(false);
-
-    if (res.ok) {
-      localStorage.setItem("userName", name);
-      showToast("Account created!", "success");
-      setTimeout(() => window.location = "index.html", 1200);
-    } else {
-      const data = await res.json();
-      showToast(data.message || "Registration failed", "error");
-    }
-
-  } catch {
-    setLoading(false);
-    showToast("Registration failed", "error");
-  }
-}
-
-// ── ADMIN BUTTON ──
-function loadAdminButton() {
-  const token = getToken();
-  if (!token) return;
-
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    if (payload.role === "admin") {
-      const btn = document.getElementById("adminBtn");
-      if (btn) btn.style.display = "block";
-    }
-  } catch {}
-}
-
-function goAdmin() {
-  window.location = "admin.html";
-}
-
-// ── BALANCE ──
-let balanceHidden = false;
-let rawBalance = "0.00";
-
-async function loadBalance() {
-  try {
-    const res = await fetch(`${API}/api/wallet/balance`, {
-      headers: { Authorization: `Bearer ${getToken()}` }
+    const res = await fetch(`${API}/api/wallet/transactions`, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`
+      }
     });
 
     const data = await res.json();
-    rawBalance = parseFloat(data.balance).toFixed(2);
 
-    const el = document.getElementById("balance");
-    if (el) el.textContent = balanceHidden ? "••••••" : rawBalance;
+    if (!res.ok) throw new Error();
 
-  } catch {}
+    if (!data.length) {
+      list.innerHTML = `<p style="text-align:center;color:#888;">No transactions yet</p>`;
+      return;
+    }
+
+    list.innerHTML = data.map(tx => {
+      const isSent = tx.type === "send";
+
+      return `
+        <div class="tx-item">
+          <div>
+            <div class="tx-title">
+              ${isSent ? "Sent to" : "Received from"} ${tx.email}
+            </div>
+            <div class="tx-date">
+              ${new Date(tx.createdAt).toLocaleString()}
+            </div>
+          </div>
+          <div class="tx-amount ${isSent ? "neg" : "pos"}">
+            ${isSent ? "-" : "+"}$${tx.amount.toFixed(2)}
+          </div>
+        </div>
+      `;
+    }).join("");
+  } catch {
+    showToast("Failed to load transactions", "error");
+  }
 }
 
-function toggleBalance() {
-  balanceHidden = !balanceHidden;
-  const el = document.getElementById("balance");
-  if (el) el.textContent = balanceHidden ? "••••••" : rawBalance;
-}
+// ===== FUND REQUEST (BANK) =====
+async function submitFundRequest() {
+  const amount = document.getElementById("fundAmount").value;
+  const senderName = document.getElementById("fundSenderName").value;
+  const senderBank = document.getElementById("fundSenderBank").value;
+  const reference = document.getElementById("fundReference").value;
 
-// ── NAVIGATION ──
-function goSend() { window.location = "send.html"; }
-function goFund() { window.location = "fund.html"; }
-function goTransactions() { window.location = "transaction.html"; }
+  if (!amount || !senderName || !senderBank || !reference) {
+    return showToast("Fill all fields", "error");
+  }
 
-function logout() {
-  localStorage.clear();
-  window.location = "index.html";
-}
-
-// ── AUTO LOAD ──
-const path = window.location.pathname;
-
-if (path.includes("dashboard")) {
-  loadBalance();
-  loadAdminButton();
-}
-
-// ── ADMIN UI ──
-function loadAdminUI() {
-  const token = getToken();
-  if (!token) return;
+  if (amount < 15000) {
+    return showToast("Minimum is ₦15,000", "error");
+  }
 
   try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    if (payload.role === "admin") {
-      const el = document.getElementById("adminCard");
-      if (el) el.style.display = "block";
+    const res = await fetch(`${API}/api/wallet/fund-request`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${getToken()}`
+      },
+      body: JSON.stringify({
+        amount,
+        senderName,
+        senderBank,
+        reference
+      })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      showToast("Submitted! Await verification", "success");
+
+      document.getElementById("fundAmount").value = "";
+      document.getElementById("fundSenderName").value = "";
+      document.getElementById("fundSenderBank").value = "";
+      document.getElementById("fundReference").value = "";
+    } else {
+      showToast(data.message || "Failed", "error");
     }
-  } catch {}
+  } catch {
+    showToast("Connection error", "error");
+  }
 }
 
-document.addEventListener("DOMContentLoaded", loadAdminUI);
+// ===== AUTO LOADERS =====
+document.addEventListener("DOMContentLoaded", () => {
+  loadTransactions();
+});
