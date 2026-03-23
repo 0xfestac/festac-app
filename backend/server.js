@@ -12,8 +12,6 @@ const app = express();
 
 app.use(cors({
   origin: [
-    "https://festac-app101.vercel.app",
-    "https://festac-app0x.vercel.app",
     "https://festac-app.vercel.app",
     "http://localhost:3000",
     "http://127.0.0.1:5500"
