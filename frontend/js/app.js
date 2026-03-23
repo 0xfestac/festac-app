@@ -47,6 +47,7 @@ window.addEventListener("pageshow", checkLock);
 
 function checkLock() {
   if (!shouldLock()) return;
+
   const hiddenAt = localStorage.getItem("hiddenAt");
   if (!hiddenAt) return;
 
@@ -62,22 +63,71 @@ function showLockScreen() {
   const overlay = document.createElement("div");
   overlay.id = "lockOverlay";
   overlay.style.cssText = `
-    position:fixed;top:0;left:0;right:0;bottom:0;
-    background:#0a0a0a;z-index:9999;
-    display:flex;flex-direction:column;
-    align-items:center;justify-content:center;padding:32px;
+    position:fixed;
+    top:0;left:0;right:0;bottom:0;
+    background:#0a0a0a;
+    z-index:9999;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
   `;
 
   overlay.innerHTML = `
-    <h2 style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;
-      background:linear-gradient(135deg,#f0c040,#c9a84c);
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-      margin-bottom:8px;">Festac</h2>
-    <p style="color:#8a7e6e;font-size:14px;margin-bottom:28px;">Enter your password to continue</p>
-    <input id="lockPassword" type="password" placeholder="Password" />
-    <button onclick="unlockApp()">Unlock</button>
-    <p id="lockError"></p>
-    <button onclick="lockLogout()">Log out instead</button>
+    <div style="width:100%;max-width:340px;text-align:center;">
+
+      <h1 style="
+        font-family:'Syne',sans-serif;
+        font-size:32px;
+        font-weight:800;
+        color:#c9a84c;
+        margin-bottom:10px;
+      ">Festac</h1>
+
+      <p style="color:#aaa;margin-bottom:30px;">
+        Enter your password to continue
+      </p>
+
+      <input id="lockPassword" type="password" placeholder="Password"
+        style="
+          width:100%;
+          padding:16px;
+          border-radius:14px;
+          border:1px solid #222;
+          background:#121212;
+          color:#fff;
+          margin-bottom:20px;
+          outline:none;
+        " />
+
+      <button onclick="unlockApp()"
+        style="
+          width:100%;
+          padding:14px;
+          border-radius:14px;
+          background:#c9a84c;
+          color:#000;
+          font-weight:700;
+          border:none;
+          margin-bottom:12px;
+          cursor:pointer;
+        ">
+        Unlock
+      </button>
+
+      <p id="lockError" style="color:#ff4d4d;margin-bottom:10px;"></p>
+
+      <button onclick="lockLogout()"
+        style="
+          background:none;
+          border:none;
+          color:#c9a84c;
+          cursor:pointer;
+        ">
+        Log out instead
+      </button>
+
+    </div>
   `;
 
   document.body.appendChild(overlay);
@@ -86,6 +136,7 @@ function showLockScreen() {
 async function unlockApp() {
   const password = document.getElementById("lockPassword")?.value;
   const token = getToken();
+
   if (!password || !token) return;
 
   try {
@@ -117,7 +168,7 @@ function lockLogout() {
   window.location = "index.html";
 }
 
-// ── LOGIN (FIXED) ──
+// ── LOGIN ──
 async function login() {
   const email = getInput("email");
   const password = getInput("password");
@@ -140,10 +191,7 @@ async function login() {
 
     if (data.token) {
       saveToken(data.token);
-
-      // ✅ FIX: Always go to dashboard
       window.location = "dashboard.html";
-
     } else {
       showToast(data.message || "Login failed", "error");
     }
@@ -238,6 +286,7 @@ function toggleBalance() {
 function goSend() { window.location = "send.html"; }
 function goFund() { window.location = "fund.html"; }
 function goTransactions() { window.location = "transaction.html"; }
+
 function logout() {
   localStorage.clear();
   window.location = "index.html";
@@ -251,17 +300,18 @@ if (path.includes("dashboard")) {
   loadAdminButton();
 }
 
-// For Admin
+// ── ADMIN UI ──
 function loadAdminUI() {
   const token = getToken();
   if (!token) return;
 
-  const payload = JSON.parse(atob(token.split(".")[1]));
-
-  if (payload.role === "admin") {
-    document.getElementById("adminCard").style.display = "block";
-  }
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    if (payload.role === "admin") {
+      const el = document.getElementById("adminCard");
+      if (el) el.style.display = "block";
+    }
+  } catch {}
 }
 
-// Call this after the page loads
 document.addEventListener("DOMContentLoaded", loadAdminUI);
