@@ -141,4 +141,68 @@ router.post("/crypto-request", auth, async (req, res) => {
   }
 });
 
+// ✅ VERIFY TRANSACTION
+router.get("/verify/:txId", auth, async (req, res) => {
+  try {
+    const { txId } = req.params;
+    const user = await User.findById(req.user.id);
+
+    // Search in user's own transactions first
+    let tx = user.transactions.id(txId);
+    let role = tx ? (tx.type === "debit" ? "sender" : "receiver") : null;
+
+    // If not found search all users
+    if (!tx) {
+      const allUsers = await User.find({
+        "transactions._id": txId
+      });
+
+      for (const u of allUsers) {
+        const found = u.transactions.id(txId);
+        if (found) {
+          // Check if logged in user is sender or receiver
+          if (found.type === "debit" && u._id.toString() === req.user.id) {
+            tx = found;
+            role = "sender";
+            break;
+          }
+          if (found.type === "credit") {
+            // Check if logged in user is the receiver
+            if (u._id.toString() === req.user.id) {
+              tx = found;
+              role = "receiver";
+              break;
+            }
+            // Check if logged in user is the sender
+            if (found.from === user.email) {
+              tx = found;
+              role = "sender";
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    if (!tx) {
+      return res.status(404).json({ message: "Transaction not found or you are not authorized to view it" });
+    }
+
+    res.json({
+      txId: tx._id,
+      type: tx.type,
+      amount: tx.amount,
+      date: tx.date,
+      from: tx.from || null,
+      to: tx.to || null,
+      status: "confirmed",
+      role
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 module.exports = router;
