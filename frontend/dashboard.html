@@ -8,98 +8,26 @@
   <meta name="theme-color" content="#c9a84c">
   <link rel="stylesheet" href="css/style.css">
   <style>
-    /* Quick addition for Explorer button */
-    .quick-btn.explorer { background: rgba(201,168,76,0.1); color: #c9a84c; }
+    /* Admin Cards & Buttons */
+    #adminCard { display:none; margin:20px; }
+    .request-card {
+      border:1px solid #ccc; border-radius:10px; padding:12px; margin-bottom:12px;
+      font-family:'Syne',sans-serif;
+    }
+    .req-header { display:flex; justify-content:space-between; }
+    .req-actions { display:flex; gap:8px; margin-top:8px; }
+    .btn-approve { flex:1; padding:8px; background:#00c97a22; border:1px solid #00c97a; cursor:pointer; }
+    .btn-reject { flex:1; padding:8px; background:#ff4d6a22; border:1px solid #ff4d6a; cursor:pointer; }
+    .filter-tabs { display:flex; gap:8px; margin-bottom:12px; }
+    .filter-tab { padding:6px 12px; border-radius:20px; border:1px solid #ccc; cursor:pointer; font-size:12px; }
+    .filter-tab.active { background:#c9a84c22; border-color:#c9a84c; color:#c9a84c; }
   </style>
 </head>
 <body>
   <div class="page has-nav">
+    <!-- Existing Dashboard HTML Above -->
 
-    <!-- Top Header -->
-    <div class="top-header fade-up">
-      <div class="header-left">
-        <label class="avatar-wrap" title="Change photo">
-          <img id="avatarImg" src="icon.png" class="avatar" alt="Profile">
-          <div class="avatar-overlay">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-          </div>
-          <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="changeAvatar(event)">
-        </label>
-        <div>
-          <div class="greeting-text">Good day,</div>
-          <div class="greeting-name" id="greetingName">Loading...</div>
-        </div>
-      </div>
-      <div class="notif-btn">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-        </svg>
-        <div class="notif-dot"></div>
-      </div>
-    </div>
-
-    <!-- Balance Card -->
-    <div class="balance-card fade-up">
-      <div class="balance-label">Wallet Balance</div>
-      <div class="balance-row">
-        <div class="balance-amount">
-          <span class="currency">$</span><span id="balance">0.00</span>
-        </div>
-        <button class="balance-toggle" onclick="toggleBalance()" id="balanceToggle">
-          <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-            <circle cx="12" cy="12" r="3"/>
-          </svg>
-        </button>
-      </div>
-      <div class="balance-footer">
-        <button class="bal-action-btn gold" onclick="goFund()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-          Fund
-        </button>
-        <button class="bal-action-btn outline" onclick="goSend()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-          Send
-        </button>
-      </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="quick-actions">
-      <button class="quick-btn" onclick="goSend()">
-        <div class="quick-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-        </div>
-        <span class="quick-label">Send</span>
-      </button>
-      <button class="quick-btn" onclick="goFund()">
-        <div class="quick-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-        </div>
-        <span class="quick-label">Add Money</span>
-      </button>
-      <button class="quick-btn" onclick="goTransactions()">
-        <div class="quick-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-        </div>
-        <span class="quick-label">History</span>
-      </button>
-      <button class="quick-btn explorer" onclick="window.location='explorer.html'">
-        <div class="quick-icon">
-          🔎
-        </div>
-        <span class="quick-label">Explorer</span>
-      </button>
-      <button class="quick-btn" onclick="window.location='setpin.html'">
-        <div class="quick-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        </div>
-        <span class="quick-label">Set PIN</span>
-      </button>
-    </div>
-
-    <!-- Admin Panel Button (only visible to admin) -->
+    <!-- Admin Panel Button -->
     <div style="padding: 0 20px;">
       <button id="adminBtn" onclick="goAdmin()" style="display:none;
         width:100%;padding:14px;border-radius:12px;margin-bottom:16px;
@@ -110,7 +38,19 @@
       </button>
     </div>
 
-    <!-- Recent Transactions -->
+    <!-- Admin Fund Requests -->
+    <div id="adminCard">
+      <h3>Admin — Fund Requests</h3>
+      <div class="filter-tabs">
+        <button class="filter-tab active" onclick="filterRequests('all', this)">All</button>
+        <button class="filter-tab" onclick="filterRequests('pending', this)">Pending</button>
+        <button class="filter-tab" onclick="filterRequests('approved', this)">Approved</button>
+        <button class="filter-tab" onclick="filterRequests('rejected', this)">Rejected</button>
+      </div>
+      <div id="requestsList"></div>
+    </div>
+
+    <!-- Recent Transactions HTML Below -->
     <div class="section fade-up">
       <div class="section-header">
         <span class="section-title">Recent Transactions</span>
@@ -118,36 +58,20 @@
       </div>
       <div id="recentList" class="tx-list"></div>
     </div>
-
   </div>
 
-  <!-- Bottom Nav -->
+  <!-- Bottom Nav & Toast -->
   <nav class="bottom-nav">
-    <a href="dashboard.html" class="nav-item active">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-      <span>Home</span>
-    </a>
-    <a href="transaction.html" class="nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#5a5248" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-      <span>History</span>
-    </a>
-    <a href="send.html" class="nav-item-center">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-    </a>
-    <a href="fund.html" class="nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#5a5248" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-      <span>Fund</span>
-    </a>
-    <button class="nav-item" onclick="logout()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#5a5248" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      <span>Logout</span>
-    </button>
+    <!-- Existing nav items -->
   </nav>
-
   <div id="toast" class="toast"></div>
+
   <script src="js/app.js"></script>
   <script>
-    // Show admin panel button if user is admin
+    const API = "https://your-backend.com"; // replace with your backend URL
+    let allRequests = [];
+    let currentFilter = "all";
+
     function loadAdminUI() {
       const token = getToken();
       if (!token) return;
@@ -155,21 +79,93 @@
         const payload = JSON.parse(atob(token.split(".")[1]));
         if (payload.role === "admin") {
           document.getElementById("adminBtn").style.display = "block";
+          document.getElementById("adminCard").style.display = "block";
+          loadRequests();
         }
       } catch {}
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-      loadGreeting();
-      loadBalance();
-      loadAvatar();
-      loadRecentTransactions();
-      loadAdminUI();
-    });
-
-    function goAdmin() {
-      window.location = "admin.html";
+    async function loadRequests() {
+      try {
+        const res = await fetch(`${API}/admin/fund-requests`, {
+          headers: { Authorization: `Bearer ${getToken()}` }
+        });
+        if (!res.ok) { showToast("Failed to load requests","error"); return; }
+        allRequests = await res.json();
+        renderRequests(currentFilter);
+      } catch { showToast("Connection error","error"); }
     }
+
+    function filterRequests(filter, btn) {
+      currentFilter = filter;
+      document.querySelectorAll(".filter-tab").forEach(t => t.classList.remove("active"));
+      btn.classList.add("active");
+      renderRequests(filter);
+    }
+
+    function renderRequests(filter) {
+      const list = document.getElementById("requestsList");
+      const filtered = filter === "all" ? allRequests : allRequests.filter(r => r.status === filter);
+      if (!filtered.length) {
+        list.innerHTML = `<div style="padding:12px;color:#999;">No ${filter === "all" ? "" : filter} requests</div>`;
+        return;
+      }
+      list.innerHTML = filtered.map(req => {
+        const date = new Date(req.createdAt).toLocaleString("en-GB", {day:"numeric", month:"short", hour:"2-digit", minute:"2-digit"});
+        const actions = req.status==="pending"? `
+          <div class="req-actions">
+            <button class="btn-approve" onclick="approveRequest('${req._id}')">Approve</button>
+            <button class="btn-reject" onclick="rejectRequest('${req._id}')">Reject</button>
+          </div>` : "";
+        return `
+          <div class="request-card">
+            <div class="req-header">
+              <div>
+                <div style="font-weight:700;">${req.userName}</div>
+                <div style="font-size:12px;color:#555;">${req.userEmail}</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-weight:800; font-size:16px;">₦${req.amount.toLocaleString()}</div>
+                <div style="font-size:11px; color:${req.status==='approved'? '#00c97a': req.status==='rejected'? '#ff4d6a':'#c9a84c'}">${req.status}</div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:#888;margin-top:4px;">${date}</div>
+            ${actions}
+          </div>`;
+      }).join("");
+    }
+
+    async function approveRequest(id) {
+      const usdAmount = prompt("Enter USD amount to credit the user:");
+      if (usdAmount===null) return;
+      if (!usdAmount||isNaN(usdAmount)||parseFloat(usdAmount)<=0){ showToast("Invalid amount entered","error"); return; }
+      try {
+        const res = await fetch(`${API}/admin/fund-requests/${id}/approve`, {
+          method:"POST",
+          headers:{"Content-Type":"application/json", Authorization:`Bearer ${getToken()}`},
+          body: JSON.stringify({ usdAmount: parseFloat(usdAmount) })
+        });
+        const data = await res.json();
+        if (res.ok){ showToast("Approved! Wallet credited","success"); loadRequests(); }
+        else showToast(data.message||"Failed","error");
+      } catch { showToast("Connection error","error"); }
+    }
+
+    async function rejectRequest(id){
+      const note = prompt("Reason for rejection (optional):");
+      try{
+        const res = await fetch(`${API}/admin/fund-requests/${id}/reject`, {
+          method:"POST",
+          headers:{"Content-Type":"application/json", Authorization:`Bearer ${getToken()}`},
+          body:JSON.stringify({ note: note||"" })
+        });
+        const data = await res.json();
+        if(res.ok){ showToast("Request rejected","error"); loadRequests(); }
+        else showToast(data.message||"Failed","error");
+      }catch{ showToast("Connection error","error"); }
+    }
+
+    loadAdminUI();
   </script>
 </body>
 </html>
