@@ -24,7 +24,6 @@
       padding:24px;
     }
 
-    /* Logo */
     .auth-logo {
       text-align:center;
       margin-bottom:30px;
@@ -51,7 +50,6 @@
       margin-top:4px;
     }
 
-    /* Card */
     .card {
       background:#1a1a1a;
       padding:20px;
@@ -63,7 +61,6 @@
       margin-bottom:16px;
     }
 
-    /* Inputs */
     input {
       width:100%;
       padding:14px;
@@ -72,6 +69,7 @@
       background:#121212;
       color:#fff;
       margin-top:6px;
+      box-sizing:border-box;
     }
 
     input:focus {
@@ -79,16 +77,10 @@
       border-color:#c9a84c;
     }
 
-    label {
-      font-size:12px;
-      color:#aaa;
-    }
+    label { font-size:12px; color:#aaa; }
 
-    .field {
-      margin-bottom:14px;
-    }
+    .field { margin-bottom:14px; }
 
-    /* Button */
     .btn-primary {
       width:100%;
       padding:14px;
@@ -99,13 +91,12 @@
       font-weight:700;
       cursor:pointer;
       margin-top:10px;
+      font-size:15px;
     }
 
-    .btn-primary:active {
-      transform:scale(0.97);
-    }
+    .btn-primary:active { transform:scale(0.97); }
+    .btn-primary:disabled { opacity:0.6; cursor:not-allowed; }
 
-    /* Link */
     .auth-link {
       text-align:center;
       font-size:13px;
@@ -113,12 +104,8 @@
       color:#888;
     }
 
-    .auth-link a {
-      color:#c9a84c;
-      font-weight:600;
-    }
+    .auth-link a { color:#c9a84c; font-weight:600; }
 
-    /* Loading */
     .loading-overlay {
       position:fixed;
       inset:0;
@@ -126,11 +113,10 @@
       display:none;
       align-items:center;
       justify-content:center;
+      z-index:999;
     }
 
-    .loading-overlay.show {
-      display:flex;
-    }
+    .loading-overlay.show { display:flex; }
 
     .spinner {
       width:40px;
@@ -141,8 +127,32 @@
       animation:spin 1s linear infinite;
     }
 
-    @keyframes spin {
-      to { transform:rotate(360deg); }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* Toast */
+    #toast {
+      position:fixed;
+      top:24px;
+      left:50%;
+      transform:translateX(-50%);
+      padding:12px 24px;
+      border-radius:20px;
+      font-size:14px;
+      font-weight:600;
+      z-index:9999;
+      display:none;
+      white-space:nowrap;
+      box-shadow:0 4px 20px rgba(0,0,0,0.4);
+    }
+
+    #toast.success {
+      background:#c9a84c;
+      color:#000;
+    }
+
+    #toast.error {
+      background:#e53e3e;
+      color:#fff;
     }
   </style>
 </head>
@@ -151,14 +161,12 @@
 
 <div class="auth-container">
 
-  <!-- Logo -->
   <div class="auth-logo">
     <img src="icon.png" class="logo-img">
     <h1>Festac</h1>
     <p>Your money, simplified</p>
   </div>
 
-  <!-- Card -->
   <div class="card">
     <div class="card-title">Welcome back</div>
 
@@ -172,7 +180,7 @@
       <input id="password" type="password" placeholder="******">
     </div>
 
-    <button class="btn-primary" onclick="login()">Sign in</button>
+    <button class="btn-primary" id="loginBtn" onclick="handleLogin()">Sign in</button>
   </div>
 
   <div class="auth-link">
@@ -185,9 +193,63 @@
   <div class="spinner"></div>
 </div>
 
-<div id="toast" class="toast"></div>
+<div id="toast"></div>
 
 <script src="js/app.js"></script>
+
+<script>
+  function showToast(msg, type = "success") {
+    const toast = document.getElementById("toast");
+    toast.textContent = msg;
+    toast.className = type;
+    toast.style.display = "block";
+    setTimeout(() => toast.style.display = "none", 3000);
+  }
+
+  async function handleLogin() {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const btn = document.getElementById("loginBtn");
+    const overlay = document.getElementById("loadingOverlay");
+
+    if (!email || !password) {
+      showToast("⚠️ Enter email and password", "error");
+      return;
+    }
+
+    btn.disabled = true;
+    overlay.classList.add("show");
+
+    try {
+      const res = await fetch(`${API}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setToken(data.token);
+        showToast("✅ Login successful!");
+        setTimeout(() => window.location = "dashboard.html", 1200);
+      } else {
+        showToast(data.message || "❌ Login failed", "error");
+      }
+
+    } catch {
+      showToast("❌ Connection error", "error");
+    }
+
+    btn.disabled = false;
+    overlay.classList.remove("show");
+  }
+
+  // Allow Enter key to login
+  document.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") handleLogin();
+  });
+</script>
 
 </body>
 </html>
