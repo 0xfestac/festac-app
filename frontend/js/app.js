@@ -113,23 +113,26 @@ async function loadTransactions() {
     }
 
     list.innerHTML = data.slice(0, 5).map(tx => {
-      const isSent = tx.type === "send";
+      const isSent = tx.type === "debit";
 
-      const name =
-        tx.email ||
-        tx.toEmail ||
-        tx.fromEmail ||
-        "Unknown";
+      const name = isSent
+        ? (tx.to || "Unknown")
+        : (tx.from || "Unknown");
 
-      const date = tx.createdAt
-        ? new Date(tx.createdAt).toLocaleString()
+      const date = tx.date
+        ? new Date(tx.date).toLocaleString("en-GB", {
+            day: "2-digit", month: "short", year: "numeric",
+            hour: "2-digit", minute: "2-digit"
+          })
         : "No date";
 
       return `
-        <div>
-          <div>${isSent ? "Sent to" : "Received from"} ${name}</div>
-          <small>${date}</small>
-          <div>${isSent ? "-" : "+"}$${Number(tx.amount).toFixed(2)}</div>
+        <div style="padding:12px 0; border-bottom:1px solid #222;">
+          <div style="font-weight:600;">${isSent ? "Sent to" : "Received from"} <span style="color:#c9a84c">${name}</span></div>
+          <small style="color:#888;">${date}</small>
+          <div style="font-size:16px; font-weight:700; margin-top:4px; color:${isSent ? "#ef4444" : "#22c55e"}">
+            ${isSent ? "-" : "+"}$${Number(tx.amount).toFixed(2)}
+          </div>
         </div>
       `;
     }).join("");
