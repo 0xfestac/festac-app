@@ -1,44 +1,215 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>FESTAC Explorer</title>
+  <meta charset="UTF-8">
+  <title>Festac — Explorer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="css/style.css">
+
+  <style>
+    .explorer-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 20px;
+      background: var(--gold-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .tx-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-top: 12px;
+      position: relative;
+    }
+
+    .tx-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(201,168,76,0.4), transparent);
+    }
+
+    .tx-amount {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      color: var(--gold);
+      font-size: 18px;
+      margin-top: 10px;
+    }
+
+    .copy-btn {
+      margin-left: 6px;
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: var(--gold-dim);
+      border: 1px solid rgba(201,168,76,0.2);
+      color: var(--gold);
+      cursor: pointer;
+    }
+  </style>
 </head>
+
 <body>
 
-<div class="page">
-  <h2>🔎 Transaction Explorer</h2>
+<div class="page has-nav">
+  
+  <!-- Header -->
+  <div class="page-header fade-up">
+    <a href="dashboard.html" class="back-btn">←</a>
+    <div class="explorer-title">Explorer</div>
+    <img src="icon.png" class="page-logo" alt="Festac">
+  </div>
 
-  <input id="searchTx" placeholder="Enter Tx ID or Email" />
-  <button onclick="searchTx()">Search</button>
+  <div class="page-body">
 
-  <div id="txResult"></div>
+    <!-- Search -->
+    <div class="card fade-up">
+      <div class="field">
+        <label>Search Transaction</label>
+        <input id="searchTx" placeholder="Tx ID or Email..." oninput="autoSearch()" />
+      </div>
+    </div>
+
+    <!-- Loader -->
+    <div id="loading" style="display:none; text-align:center; margin-top:20px;">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- Results -->
+    <div id="txResult" class="fade-up"></div>
+
+  </div>
 </div>
 
+<!-- Bottom Nav -->
+<nav class="bottom-nav">
+  <a href="dashboard.html" class="nav-item"><span>Home</span></a>
+  <a href="transaction.html" class="nav-item"><span>History</span></a>
+  <a href="send.html" class="nav-item-center">✈</a>
+  <a href="fund.html" class="nav-item"><span>Fund</span></a>
+  <button class="nav-item" onclick="logout()"><span>Logout</span></button>
+</nav>
+
+<div id="toast" class="toast"></div>
+
 <script src="js/app.js"></script>
+
 <script>
+let debounceTimer;
+
+// Auto search
+function autoSearch() {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(searchTx, 400);
+}
+
+// Fetch transactions
 async function searchTx() {
-  const query = document.getElementById("searchTx").value;
-
-  const res = await fetch(`${API}/api/wallet/explorer?q=${query}`);
-  const data = await res.json();
-
+  const query = document.getElementById("searchTx").value.trim();
   const box = document.getElementById("txResult");
+  const loader = document.getElementById("loading");
 
-  if (!data.length) {
-    box.innerHTML = "No transactions found";
+  if (!query) {
+    box.innerHTML = "";
     return;
   }
 
-  box.innerHTML = data.map(tx => `
-    <div class="tx">
-      <p><b>ID:</b> ${tx._id}</p>
-      <p><b>From:</b> ${tx.from}</p>
-      <p><b>To:</b> ${tx.to}</p>
-      <p><b>Amount:</b> $${tx.amount}</p>
-      <p><b>Status:</b> ${tx.status}</p>
-    </div>
-  `).join("");
+  loader.style.display = "block";
+  box.innerHTML = "";
+
+  try {
+    const res = await fetch(`${API}/api/wallet/explorer?q=${query}`);
+    const data = await res.json();
+
+    loader.style.display = "none";
+
+    if (!data.length) {
+      box.innerHTML = `<div class="card">No transactions found</div>`;
+      return;
+    }
+
+    box.innerHTML = data.map(tx => `
+      <div class="tx-card">
+        
+        <div style="display:flex;justify-content:space-between;">
+          <b>Transaction</b>
+          <span style="font-size:12px;color:var(--text-muted)">
+            ${new Date(tx.createdAt).toLocaleString()}
+          </span>
+        </div>
+
+        <div style="margin-top:8px;font-size:13px;">
+          <b>ID:</b> ${tx._id}
+          <button onclick="copyTx('${tx._id}')" class="copy-btn">Copy</button>
+        </div>
+
+        <div style="font-size:13px;margin-top:4px;"><b>From:</b> ${tx.from}</div>
+        <div style="font-size:13px;"><b>To:</b> ${tx.to}</div>
+
+        <div class="tx-amount">$${tx.amount.toFixed(2)}</div>
+
+        <div style="margin-top:6px;">
+          <span class="status-badge status-${tx.status}">
+            ${tx.status}
+          </span>
+        </div>
+
+        <button class="btn btn-primary" style="margin-top:12px;width:100%" 
+          onclick='downloadReceipt(${JSON.stringify(tx)})'>
+          Download Receipt (PDF)
+        </button>
+
+      </div>
+    `).join("");
+
+  } catch {
+    loader.style.display = "none";
+    showToast("Error fetching transactions", "error");
+  }
+}
+
+// Copy TX ID
+function copyTx(id) {
+  navigator.clipboard.writeText(id);
+  showToast("Copied!", "success");
+}
+
+// Download PDF Receipt
+function downloadReceipt(tx) {
+  const content = `
+FESTAC RECEIPT
+--------------------------
+Transaction ID: ${tx._id}
+From: ${tx.from}
+To: ${tx.to}
+Amount: $${tx.amount.toFixed(2)}
+Status: ${tx.status}
+Date: ${new Date(tx.createdAt).toLocaleString()}
+--------------------------
+`;
+
+  const blob = new Blob([content], { type: "application/pdf" });
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+
+  a.href = url;
+  a.download = `Festac_Receipt_${tx._id}.pdf`;
+
+  document.body.appendChild(a);
+  a.click();
+
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  showToast("Receipt downloaded", "success");
 }
 </script>
 
