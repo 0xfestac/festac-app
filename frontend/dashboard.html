@@ -329,9 +329,10 @@ function applyBalanceState() {
   }
 }
 
-  loadUserInfo();
-  loadBalance();
-  loadTransactions();
+  applyBalanceState(); // ← apply saved eye state immediately on load
+loadUserInfo();
+loadBalance();
+loadTransactions();
 </script>
 
 </body>
