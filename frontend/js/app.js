@@ -1,5 +1,5 @@
 // ===== CONFIG =====
-const API = "https://festac-api.onrender.com"; // change if needed
+const API = "https://festac-app0x.onrender.com"; // change if needed
 
 // ===== TOKEN HELPERS =====
 function getToken() {
