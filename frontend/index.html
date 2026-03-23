@@ -7,35 +7,187 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#c9a84c">
   <link rel="stylesheet" href="css/style.css">
+
+  <style>
+    body {
+      background:#0a0a0a;
+      color:#fff;
+      font-family:'Syne',sans-serif;
+      margin:0;
+    }
+
+    .auth-container {
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      padding:24px;
+    }
+
+    /* Logo */
+    .auth-logo {
+      text-align:center;
+      margin-bottom:30px;
+    }
+
+    .logo-img {
+      width:60px;
+      height:60px;
+      margin-bottom:10px;
+    }
+
+    .auth-logo h1 {
+      font-size:26px;
+      margin:0;
+      font-weight:800;
+      background:linear-gradient(135deg,#f0c040,#c9a84c);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+    }
+
+    .auth-logo p {
+      color:#888;
+      font-size:13px;
+      margin-top:4px;
+    }
+
+    /* Card */
+    .card {
+      background:#1a1a1a;
+      padding:20px;
+      border-radius:14px;
+    }
+
+    .card-title {
+      font-weight:700;
+      margin-bottom:16px;
+    }
+
+    /* Inputs */
+    input {
+      width:100%;
+      padding:14px;
+      border-radius:12px;
+      border:1px solid #222;
+      background:#121212;
+      color:#fff;
+      margin-top:6px;
+    }
+
+    input:focus {
+      outline:none;
+      border-color:#c9a84c;
+    }
+
+    label {
+      font-size:12px;
+      color:#aaa;
+    }
+
+    .field {
+      margin-bottom:14px;
+    }
+
+    /* Button */
+    .btn-primary {
+      width:100%;
+      padding:14px;
+      border-radius:12px;
+      border:none;
+      background:#c9a84c;
+      color:#000;
+      font-weight:700;
+      cursor:pointer;
+      margin-top:10px;
+    }
+
+    .btn-primary:active {
+      transform:scale(0.97);
+    }
+
+    /* Link */
+    .auth-link {
+      text-align:center;
+      font-size:13px;
+      margin-top:18px;
+      color:#888;
+    }
+
+    .auth-link a {
+      color:#c9a84c;
+      font-weight:600;
+    }
+
+    /* Loading */
+    .loading-overlay {
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.6);
+      display:none;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .loading-overlay.show {
+      display:flex;
+    }
+
+    .spinner {
+      width:40px;
+      height:40px;
+      border:3px solid #333;
+      border-top-color:#c9a84c;
+      border-radius:50%;
+      animation:spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform:rotate(360deg); }
+    }
+  </style>
 </head>
+
 <body>
-  <div class="page auth-page">
-    <div class="auth-logo fade-up">
-      <div class="logo-mark">
-        <img src="icon.png" alt="Festac" class="logo-img">
-      </div>
-      <h1>Festac</h1>
-      <p>Your money, simplified</p>
-    </div>
 
-    <div class="card fade-up">
-      <p class="card-title">Welcome back</p>
-      <div class="field">
-        <label>Email address</label>
-        <input id="email" type="email" placeholder="you@example.com">
-      </div>
-      <div class="field">
-        <label>Password</label>
-        <input id="password" type="password" placeholder="••••••••">
-      </div>
-      <button class="btn btn-primary" onclick="login()" style="margin-top:8px">Sign in</button>
-    </div>
+<div class="auth-container">
 
-    <p class="auth-link fade-up">Don't have an account? <a href="register.html">Create one</a></p>
+  <!-- Logo -->
+  <div class="auth-logo">
+    <img src="icon.png" class="logo-img">
+    <h1>Festac</h1>
+    <p>Your money, simplified</p>
   </div>
 
-  <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
-  <div id="toast" class="toast"></div>
-  <script src="js/app.js"></script>
+  <!-- Card -->
+  <div class="card">
+    <div class="card-title">Welcome back</div>
+
+    <div class="field">
+      <label>Email</label>
+      <input id="email" type="email" placeholder="you@example.com">
+    </div>
+
+    <div class="field">
+      <label>Password</label>
+      <input id="password" type="password" placeholder="******">
+    </div>
+
+    <button class="btn-primary" onclick="login()">Sign in</button>
+  </div>
+
+  <div class="auth-link">
+    Don't have an account? <a href="register.html">Create one</a>
+  </div>
+
+</div>
+
+<div id="loadingOverlay" class="loading-overlay">
+  <div class="spinner"></div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="js/app.js"></script>
+
 </body>
 </html>
