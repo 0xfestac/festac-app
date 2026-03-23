@@ -4,8 +4,6 @@
   <meta charset="UTF-8">
   <title>Festac — Add Money</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#c9a84c">
   <link rel="stylesheet" href="css/style.css">
 
   <style>
@@ -16,7 +14,6 @@
       margin:0;
     }
 
-    /* Header (match dashboard) */
     .top-header {
       display:flex;
       justify-content:space-between;
@@ -26,18 +23,8 @@
       border-bottom:1px solid #222;
     }
 
-    .back-btn {
-      color:#c9a84c;
-      font-size:18px;
-      cursor:pointer;
-    }
+    .title { font-weight:700; }
 
-    .title {
-      font-weight:700;
-      font-size:16px;
-    }
-
-    /* Tabs */
     .fund-tabs {
       display:flex;
       gap:8px;
@@ -51,7 +38,6 @@
       border:1px solid #222;
       background:#121212;
       color:#888;
-      font-size:12px;
       cursor:pointer;
     }
 
@@ -61,16 +47,20 @@
       border-color:#c9a84c;
     }
 
-    /* Panels */
     .fund-panel { display:none; padding:0 20px 20px; }
     .fund-panel.active { display:block; }
 
-    /* Cards */
     .payment-card {
       background:#1a1a1a;
       border-radius:12px;
       margin-bottom:12px;
       padding:14px;
+      border:1px solid #222;
+    }
+
+    .payment-card.open {
+      border-color:#c9a84c;
+      box-shadow:0 0 12px rgba(201,168,76,0.2);
     }
 
     .payment-header {
@@ -78,10 +68,6 @@
       justify-content:space-between;
       align-items:center;
       cursor:pointer;
-    }
-
-    .payment-title {
-      font-weight:700;
     }
 
     .payment-body {
@@ -93,8 +79,31 @@
       display:block;
     }
 
-    /* Inputs */
-    input, select {
+    .address-box {
+      display:flex;
+      gap:10px;
+      background:#121212;
+      padding:10px;
+      border-radius:10px;
+      margin-top:8px;
+    }
+
+    .address-text {
+      flex:1;
+      font-size:12px;
+      word-break:break-all;
+    }
+
+    .copy-btn {
+      background:#c9a84c;
+      border:none;
+      padding:6px 10px;
+      border-radius:6px;
+      cursor:pointer;
+      font-size:11px;
+    }
+
+    input {
       width:100%;
       padding:14px;
       border-radius:12px;
@@ -104,8 +113,7 @@
       margin-bottom:10px;
     }
 
-    /* Button */
-    .btn-gold {
+    .btn-primary {
       width:100%;
       padding:14px;
       border-radius:12px;
@@ -116,7 +124,15 @@
       cursor:pointer;
     }
 
-    /* Bottom nav (match dashboard) */
+    .info-box {
+      background:rgba(201,168,76,0.1);
+      border:1px solid rgba(201,168,76,0.3);
+      padding:10px;
+      border-radius:10px;
+      margin-bottom:12px;
+      font-size:12px;
+    }
+
     .bottom-nav {
       position:fixed;
       bottom:0;
@@ -128,94 +144,173 @@
       border-top:1px solid #222;
     }
 
-    .nav-item {
-      font-size:12px;
-      color:#888;
-      text-align:center;
-    }
-
-    .nav-item.active {
-      color:#c9a84c;
-    }
+    .nav-item { color:#888; font-size:12px; }
+    .nav-item.active { color:#c9a84c; }
   </style>
 </head>
 
 <body>
 
-<!-- Header -->
 <div class="top-header">
-  <div class="back-btn" onclick="window.location='dashboard.html'">←</div>
+  <div onclick="window.location='dashboard.html'">←</div>
   <div class="title">Add Money</div>
   <div></div>
 </div>
 
 <!-- Tabs -->
 <div class="fund-tabs">
-  <button class="fund-tab active" onclick="switchTab('crypto')">🔐 Crypto</button>
-  <button class="fund-tab" onclick="switchTab('bank')">🏦 Bank</button>
-  <button class="fund-tab" onclick="switchTab('friend')">👤 Friend</button>
+  <button class="fund-tab active" onclick="switchTab('crypto')">Crypto</button>
+  <button class="fund-tab" onclick="switchTab('bank')">Bank</button>
+  <button class="fund-tab" onclick="switchTab('friend')">Friend</button>
 </div>
 
-<!-- Crypto -->
+<!-- CRYPTO -->
 <div class="fund-panel active" id="panel-crypto">
-  <div class="payment-card" onclick="toggleCard('crypto')">
-    <div class="payment-header">
-      <span class="payment-title">USDT / TON</span>
+
+  <div class="info-box">
+    Send crypto and submit TX hash after transfer.
+  </div>
+
+  <!-- TON -->
+  <div class="payment-card" id="card-ton">
+    <div class="payment-header" onclick="toggleCard('ton')">
+      <b>Toncoin (TON)</b>
       <span>▼</span>
     </div>
 
     <div class="payment-body">
-      <p style="color:#aaa;font-size:12px;margin-bottom:10px;">
-        Send crypto and submit transaction hash
-      </p>
+      <div class="address-box">
+        <span class="address-text" id="addr-ton">
+          UQBGyjLcP3f_G4xh3XRU7_YxpgAwUrPBc1MkrIXSPj-nURPR
+        </span>
+        <button class="copy-btn" onclick="copyAddress('addr-ton', this)">Copy</button>
+      </div>
 
-      <input placeholder="Amount">
-      <input placeholder="Transaction hash">
+      <input id="tonAmount" placeholder="Amount (TON)">
+      <input id="tonHash" placeholder="Transaction Hash">
 
-      <button class="btn-gold">Submit</button>
+      <button class="btn-primary" onclick="submitCryptoRequest('TON')">
+        Submit
+      </button>
     </div>
   </div>
+
+  <!-- USDT -->
+  <div class="payment-card" id="card-usdt">
+    <div class="payment-header" onclick="toggleCard('usdt')">
+      <b>USDT</b>
+      <span>▼</span>
+    </div>
+
+    <div class="payment-body">
+      <div class="address-box">
+        <span class="address-text" id="addr-usdt">
+          0x8DD46b02323EE9ECBf0863fAf7C019C530ac48Af
+        </span>
+        <button class="copy-btn" onclick="copyAddress('addr-usdt', this)">Copy</button>
+      </div>
+
+      <input id="usdtAmount" placeholder="Amount (USDT)">
+      <input id="usdtHash" placeholder="Transaction Hash">
+
+      <button class="btn-primary" onclick="submitCryptoRequest('USDT')">
+        Submit
+      </button>
+    </div>
+  </div>
+
 </div>
 
-<!-- Bank -->
+<!-- BANK -->
 <div class="fund-panel" id="panel-bank">
-  <div class="payment-card" onclick="toggleCard('bank')">
-    <div class="payment-header">
-      <span class="payment-title">Bank Transfer</span>
-      <span>▼</span>
+
+  <div class="payment-card" id="card-bank">
+
+    <!-- Header -->
+    <div class="payment-header" onclick="toggleCard('bank')">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="
+          width:36px;height:36px;
+          border-radius:10px;
+          background:rgba(201,168,76,0.12);
+          display:flex;align-items:center;justify-content:center;
+          font-size:16px;">
+          🏦
+        </div>
+        <div>
+          <div style="font-weight:700;">Bank Transfer</div>
+          <div style="font-size:11px;color:#888;">Moniepoint MFB</div>
+        </div>
+      </div>
+      <span style="color:#c9a84c;">▼</span>
     </div>
 
+    <!-- Body -->
     <div class="payment-body">
-      <p style="color:#aaa;font-size:12px;">
-        Bank: Moniepoint  
-        <br>Account: 8109731698
-      </p>
 
-      <input placeholder="Amount (₦)">
-      <input placeholder="Your Name">
+      <!-- Account -->
+      <div class="address-box">
+        <span class="address-text" id="acct-no">8109731698</span>
+        <button class="copy-btn" onclick="copyAddress('acct-no', this)">Copy</button>
+      </div>
 
-      <button class="btn-gold">Submit</button>
+      <div style="font-size:12px;color:#888;margin-bottom:14px;">
+        Account Name: <b style="color:#fff;">Festac Wallet</b>
+      </div>
+
+      <!-- Inputs -->
+      <input id="fundAmount" type="number" placeholder="Amount (₦)" min="15000">
+      <input id="fundSenderName" placeholder="Your Name (Bank)">
+      <input id="fundSenderBank" placeholder="Your Bank Name">
+      <input id="fundReference" placeholder="Transaction Reference">
+
+      <!-- Button -->
+      <button class="btn btn-primary" onclick="submitFundRequest()" style="margin-top:10px;">
+        Submit for Verification
+      </button>
+
+      <!-- Info -->
+      <div style="
+        margin-top:14px;
+        font-size:12px;
+        color:#888;
+        background:rgba(201,168,76,0.08);
+        padding:10px;
+        border-radius:10px;
+        border:1px solid rgba(201,168,76,0.2);">
+        ⚡ Minimum deposit: <b>₦15,000</b><br>
+        ⏱ Processing time: <b>Up to 24 hrs</b>
+      </div>
+
     </div>
   </div>
+
 </div>
 
-<!-- Friend -->
+<!-- FRIEND -->
 <div class="fund-panel" id="panel-friend">
+
   <div class="payment-card">
-    <p style="color:#aaa;font-size:12px;">
-      Ask a friend to send money to your email.
-    </p>
+    <div class="payment-header">
+      <b>Receive from Friend</b>
+    </div>
+
+    <div class="payment-body" style="display:block">
+      <div class="address-box">
+        <span id="myEmail">Loading...</span>
+        <button class="copy-btn" onclick="copyAddress('myEmail', this)">Copy</button>
+      </div>
+    </div>
   </div>
+
 </div>
 
-<!-- Bottom Nav -->
-<nav class="bottom-nav">
-  <div class="nav-item" onclick="window.location='dashboard.html'">🏠 Home</div>
-  <div class="nav-item" onclick="window.location='transaction.html'">📜 History</div>
-  <div class="nav-item" onclick="window.location='send.html'">✉️ Send</div>
-  <div class="nav-item active">💰 Fund</div>
-  <div class="nav-item" onclick="logout()">🚪 Logout</div>
-</nav>
+<!-- NAV -->
+<div class="bottom-nav">
+  <div class="nav-item" onclick="window.location='dashboard.html'">Home</div>
+  <div class="nav-item" onclick="window.location='transaction.html'">History</div>
+  <div class="nav-item active">Fund</div>
+</div>
 
 <script src="js/app.js"></script>
 
@@ -230,10 +325,32 @@ function switchTab(tab) {
 }
 
 function toggleCard(id) {
-  const panel = document.getElementById("panel-" + id);
-  const card = panel.querySelector(".payment-card");
+  const card = document.getElementById("card-" + id);
+  if (!card) return;
+
+  document.querySelectorAll(".payment-card").forEach(c => {
+    if (c !== card) c.classList.remove("open");
+  });
+
   card.classList.toggle("open");
 }
+
+function copyAddress(id, btn) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text);
+  btn.innerText = "Copied";
+  setTimeout(() => btn.innerText = "Copy", 1500);
+}
+
+function loadMyEmail() {
+  try {
+    const token = localStorage.getItem("token");
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    document.getElementById("myEmail").textContent = payload.email;
+  } catch {}
+}
+
+loadMyEmail();
 </script>
 
 </body>
