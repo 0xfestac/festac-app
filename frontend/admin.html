@@ -6,168 +6,38 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="css/style.css">
   <style>
-    .admin-header {
-      padding: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--border);
-    }
-    .admin-title {
-      font-family: 'Syne', sans-serif;
-      font-size: 20px;
-      font-weight: 800;
-      background: var(--gold-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .admin-body { padding: 20px; }
-    .request-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 18px;
-      margin-bottom: 14px;
-      position: relative;
-      overflow: hidden;
-    }
-    .request-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(201,168,76,0.3), transparent);
-    }
-    .request-card.approved { border-color: rgba(0,201,122,0.3); }
-    .request-card.rejected { border-color: rgba(255,77,106,0.3); }
-    .req-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 12px;
-    }
-    .req-name {
-      font-family: 'Syne', sans-serif;
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--text);
-    }
-    .req-email {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
-    .req-amount {
-      font-family: 'Syne', sans-serif;
-      font-size: 18px;
-      font-weight: 800;
-      color: var(--gold);
-    }
-    .req-details {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 14px;
-    }
-    .req-detail-item {}
-    .req-detail-label {
-      font-size: 10px;
-      font-weight: 500;
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 3px;
-    }
-    .req-detail-value {
-      font-size: 13px;
-      color: var(--text);
-      font-weight: 500;
-    }
-    .req-actions {
-      display: flex;
-      gap: 10px;
-    }
-    .btn-approve {
-      flex: 1; padding: 11px; border-radius: 10px; border: none;
-      background: rgba(0,201,122,0.15); color: #00c97a;
-      border: 1px solid rgba(0,201,122,0.3);
-      font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700;
-      cursor: pointer; transition: all 0.2s;
-    }
-    .btn-approve:hover { background: rgba(0,201,122,0.25); }
-    .btn-reject {
-      flex: 1; padding: 11px; border-radius: 10px; border: none;
-      background: var(--danger-dim); color: var(--danger);
-      border: 1px solid rgba(255,77,106,0.3);
-      font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700;
-      cursor: pointer; transition: all 0.2s;
-    }
-    .btn-reject:hover { background: rgba(255,77,106,0.2); }
-    .status-badge {
-      padding: 4px 10px; border-radius: 20px;
-      font-size: 11px; font-weight: 600;
-      font-family: 'Syne', sans-serif;
-    }
-    .status-pending { background: var(--gold-dim); color: var(--gold); border: 1px solid rgba(201,168,76,0.3); }
-    .status-approved { background: rgba(0,201,122,0.12); color: #00c97a; border: 1px solid rgba(0,201,122,0.3); }
-    .status-rejected { background: var(--danger-dim); color: var(--danger); border: 1px solid rgba(255,77,106,0.3); }
-    .req-time {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-bottom: 12px;
-    }
-    .filter-tabs {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 20px;
-    }
-    .filter-tab {
-      padding: 8px 16px; border-radius: 20px;
-      border: 1px solid var(--border-bright);
-      background: var(--surface); color: var(--text-muted);
-      font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 600;
-      cursor: pointer; transition: all 0.2s;
-    }
-    .filter-tab.active {
-      background: var(--gold-dim);
-      border-color: rgba(201,168,76,0.4);
-      color: var(--gold);
-    }
-    .empty-state {
-      text-align: center;
-      padding: 48px 24px;
-      color: var(--text-muted);
-    }
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 24px;
-    }
-    .stat-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 14px;
-      text-align: center;
-    }
-    .stat-value {
-      font-family: 'Syne', sans-serif;
-      font-size: 20px;
-      font-weight: 800;
-      color: var(--gold);
-    }
-    .stat-label {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
-    .credited-amount {
-      font-size: 12px;
-      color: #00c97a;
-      margin-top: 4px;
-    }
+    /* --- Admin panel styling --- */
+    .admin-header { padding:20px; display:flex; justify-content:space-between; border-bottom:1px solid var(--border); }
+    .admin-title { font-family:'Syne',sans-serif; font-size:20px; font-weight:800; background:var(--gold-gradient); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .admin-body { padding:20px; }
+    .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:24px; }
+    .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px; text-align:center; }
+    .stat-value { font-family:'Syne',sans-serif; font-size:20px; font-weight:800; color:var(--gold); }
+    .stat-label { font-size:11px; color:var(--text-muted); margin-top:4px; }
+    .filter-tabs { display:flex; gap:8px; margin-bottom:20px; }
+    .filter-tab { padding:8px 16px; border-radius:20px; border:1px solid var(--border-bright); background:var(--surface); color:var(--text-muted); font-family:'Syne',sans-serif; font-size:12px; font-weight:600; cursor:pointer; transition:all .2s; }
+    .filter-tab.active { background:var(--gold-dim); border-color:rgba(201,168,76,.4); color:var(--gold); }
+    .request-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px; margin-bottom:14px; position:relative; overflow:hidden; }
+    .request-card.approved { border-color:rgba(0,201,122,.3); }
+    .request-card.rejected { border-color:rgba(255,77,106,.3); }
+    .req-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; }
+    .req-name { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; color:var(--text); }
+    .req-email { font-size:12px; color:var(--text-muted); margin-top:2px; }
+    .req-amount { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; color:var(--gold); }
+    .req-details { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; }
+    .req-detail-label { font-size:10px; font-weight:500; letter-spacing:.8px; text-transform:uppercase; color:var(--text-muted); margin-bottom:3px; }
+    .req-detail-value { font-size:13px; color:var(--text); font-weight:500; }
+    .req-actions { display:flex; gap:10px; }
+    .btn-approve { flex:1; padding:11px; border-radius:10px; border:none; background:rgba(0,201,122,.15); color:#00c97a; border:1px solid rgba(0,201,122,.3); font-family:'Syne',sans-serif; font-size:13px; font-weight:700; cursor:pointer; transition:.2s; }
+    .btn-approve:hover { background:rgba(0,201,122,.25); }
+    .btn-reject { flex:1; padding:11px; border-radius:10px; border:none; background:var(--danger-dim); color:var(--danger); border:1px solid rgba(255,77,106,.3); font-family:'Syne',sans-serif; font-size:13px; font-weight:700; cursor:pointer; transition:.2s; }
+    .btn-reject:hover { background:rgba(255,77,106,.2); }
+    .status-badge { padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600; font-family:'Syne',sans-serif; }
+    .status-pending { background:var(--gold-dim); color:var(--gold); border:1px solid rgba(201,168,76,.3); }
+    .status-approved { background:rgba(0,201,122,.12); color:#00c97a; border:1px solid rgba(0,201,122,.3); }
+    .status-rejected { background:var(--danger-dim); color:var(--danger); border:1px solid rgba(255,77,106,.3); }
+    .credited-amount { font-size:12px; color:#00c97a; margin-top:4px; }
+    .empty-state { text-align:center; padding:48px 24px; color:var(--text-muted); }
   </style>
 </head>
 <body>
@@ -256,20 +126,13 @@
       }
 
       list.innerHTML = filtered.map(req => {
-        const date = new Date(req.createdAt).toLocaleString("en-GB", {
-          day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"
-        });
-
+        const date = new Date(req.createdAt).toLocaleString("en-GB", { day:"numeric", month:"short", hour:"2-digit", minute:"2-digit" });
         const actions = req.status === "pending" ? `
           <div class="req-actions">
             <button class="btn-approve" onclick="approveRequest('${req._id}')">✓ Approve</button>
             <button class="btn-reject" onclick="rejectRequest('${req._id}')">✕ Reject</button>
           </div>` : "";
-
-        const creditedLine = req.status === "approved" && req.creditedAmount
-          ? `<div class="credited-amount">Credited: $${req.creditedAmount.toFixed(2)}</div>`
-          : "";
-
+        const creditedLine = req.status === "approved" && req.creditedAmount ? `<div class="credited-amount">Credited: $${req.creditedAmount.toFixed(2)}</div>` : "";
         return `
           <div class="request-card ${req.status}" id="req-${req._id}">
             <div class="req-header">
@@ -283,7 +146,6 @@
                 <span class="status-badge status-${req.status}">${req.status}</span>
               </div>
             </div>
-            <div class="req-time">${date}</div>
             <div class="req-details">
               <div class="req-detail-item">
                 <div class="req-detail-label">Sender Name</div>
@@ -313,22 +175,13 @@
       try {
         const res = await fetch(`${API}/admin/fund-requests/${id}/approve`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getToken()}`
-          },
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
           body: JSON.stringify({ usdAmount: parseFloat(usdAmount) })
         });
         const data = await res.json();
-        if (res.ok) {
-          showToast("Approved! Wallet credited", "success");
-          loadRequests();
-        } else {
-          showToast(data.message || "Failed", "error");
-        }
-      } catch (err) {
-        showToast("Connection error", "error");
-      }
+        if (res.ok) { showToast("Approved! Wallet credited", "success"); loadRequests(); } 
+        else showToast(data.message || "Failed", "error");
+      } catch { showToast("Connection error", "error"); }
     }
 
     async function rejectRequest(id) {
@@ -336,22 +189,13 @@
       try {
         const res = await fetch(`${API}/admin/fund-requests/${id}/reject`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getToken()}`
-          },
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
           body: JSON.stringify({ note: note || "" })
         });
         const data = await res.json();
-        if (res.ok) {
-          showToast("Request rejected", "error");
-          loadRequests();
-        } else {
-          showToast(data.message || "Failed", "error");
-        }
-      } catch (err) {
-        showToast("Connection error", "error");
-      }
+        if (res.ok) { showToast("Request rejected", "error"); loadRequests(); }
+        else showToast(data.message || "Failed", "error");
+      } catch { showToast("Connection error", "error"); }
     }
 
     loadRequests();
