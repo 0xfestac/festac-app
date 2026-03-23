@@ -1,7 +1,7 @@
 // ===== CONFIG =====
 const API = "https://festac-app0x.onrender.com";
 
-// ===== TOKEN HELPERS =====
+// ===== TOKEN =====
 function getToken() {
   return localStorage.getItem("token");
 }
@@ -32,35 +32,19 @@ function goAdmin() {
   window.location = "admin.html";
 }
 
-// ===== UI HELPERS =====
+// ===== UI =====
 function showToast(message, type = "info") {
-  const toast = document.getElementById("toast");
-  if (!toast) return;
-
-  toast.textContent = message;
-  toast.className = "toast show " + type;
-
-  setTimeout(() => {
-    toast.className = "toast";
-  }, 3000);
+  console.log(message);
 }
 
-function showLoading(show = true) {
-  const el = document.getElementById("loadingOverlay");
-  if (!el) return;
-  el.style.display = show ? "flex" : "none";
-}
-
-// ===== AUTH =====
+// ===== LOGIN =====
 async function login() {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
 
   if (!email || !password) {
-    return showToast("Enter email and password", "error");
+    return alert("Enter email and password");
   }
-
-  showLoading(true);
 
   try {
     const res = await fetch(`${API}/api/auth/login`, {
@@ -75,19 +59,14 @@ async function login() {
 
     if (res.ok) {
       setToken(data.token);
-      showToast("Login successful", "success");
-
-      setTimeout(() => {
-        window.location = "dashboard.html";
-      }, 800);
+      alert("Login successful");
+      window.location = "dashboard.html";
     } else {
-      showToast(data.message || "Login failed", "error");
+      alert(data.message || "Login failed");
     }
   } catch {
-    showToast("Connection error", "error");
+    alert("Connection error");
   }
-
-  showLoading(false);
 }
 
 // ===== BALANCE =====
@@ -105,10 +84,10 @@ async function loadBalance() {
     const data = await res.json();
 
     if (res.ok) {
-      el.textContent = `$${data.balance.toFixed(2)}`;
+      el.textContent = `$${Number(data.balance).toFixed(2)}`;
     }
   } catch {
-    showToast("Failed to load balance", "error");
+    console.log("Balance error");
   }
 }
 
@@ -129,91 +108,34 @@ async function loadTransactions() {
     if (!res.ok) throw new Error();
 
     if (!data.length) {
-      list.innerHTML = `<p style="text-align:center;color:#888;">No transactions yet</p>`;
+      list.innerHTML = `<p>No transactions yet</p>`;
       return;
     }
 
     list.innerHTML = data.slice(0, 5).map(tx => {
       const isSent = tx.type === "send";
 
+      const name =
+        tx.email ||
+        tx.toEmail ||
+        tx.fromEmail ||
+        "Unknown";
+
+      const date = tx.createdAt
+        ? new Date(tx.createdAt).toLocaleString()
+        : "No date";
+
       return `
-        <div class="tx-item">
-          <div>
-            <div class="tx-title">
-              ${isSent ? "Sent to" : "Received from"} ${tx.email}
-            </div>
-            <div class="tx-date">
-              ${new Date(tx.createdAt).toLocaleString()}
-            </div>
-          </div>
-          <div class="tx-amount ${isSent ? "neg" : "pos"}">
-            ${isSent ? "-" : "+"}$${tx.amount.toFixed(2)}
-          </div>
+        <div>
+          <div>${isSent ? "Sent to" : "Received from"} ${name}</div>
+          <small>${date}</small>
+          <div>${isSent ? "-" : "+"}$${Number(tx.amount).toFixed(2)}</div>
         </div>
       `;
     }).join("");
 
   } catch {
-    showToast("Failed to load transactions", "error");
-  }
-}
-
-// ===== SEND MONEY =====
-let sendData = {};
-
-function openPinModal() {
-  const email = document.getElementById("toEmail")?.value.trim();
-  const amount = parseFloat(document.getElementById("amount")?.value);
-
-  if (!email || !amount) {
-    return showToast("Fill all fields", "error");
-  }
-
-  if (amount > 50) {
-    return showToast("Max transfer is $50", "error");
-  }
-
-  sendData = { email, amount };
-
-  document.getElementById("pinModal").style.display = "flex";
-}
-
-function closeModal() {
-  document.getElementById("pinModal").style.display = "none";
-}
-
-async function confirmSend() {
-  const pin = document.getElementById("pinInput").value;
-
-  if (pin.length !== 4) {
-    return showToast("Enter 4-digit PIN", "error");
-  }
-
-  try {
-    const res = await fetch(`${API}/api/wallet/send`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${getToken()}`
-      },
-      body: JSON.stringify({
-        toEmail: sendData.email,
-        amount: sendData.amount,
-        pin
-      })
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      showToast("Transfer successful", "success");
-      closeModal();
-    } else {
-      showToast(data.message || "Transfer failed", "error");
-    }
-
-  } catch {
-    showToast("Connection error", "error");
+    console.log("Transaction error");
   }
 }
 
@@ -222,28 +144,33 @@ function loadProfilePic() {
   const img = document.getElementById("profilePic");
   const saved = localStorage.getItem("profilePic");
 
-  if (saved && img) {
-    img.src = saved;
+  if (img) {
+    img.src = saved || "https://via.placeholder.com/40";
   }
 }
 
-document.getElementById("uploadPic")?.addEventListener("change", function () {
-  const file = this.files[0];
-  if (!file) return;
+function initUpload() {
+  const input = document.getElementById("uploadPic");
+  if (!input) return;
 
-  const reader = new FileReader();
-  reader.onload = function (e) {
-    localStorage.setItem("profilePic", e.target.result);
-    loadProfilePic();
-    showToast("Profile updated", "success");
-  };
+  input.addEventListener("change", function () {
+    const file = this.files[0];
+    if (!file) return;
 
-  reader.readAsDataURL(file);
-});
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      localStorage.setItem("profilePic", e.target.result);
+      loadProfilePic();
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
 
 // ===== INIT =====
 document.addEventListener("DOMContentLoaded", () => {
   loadBalance();
   loadTransactions();
   loadProfilePic();
+  initUpload();
 });
