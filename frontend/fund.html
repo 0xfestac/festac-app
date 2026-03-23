@@ -141,7 +141,7 @@
       <div class="fund-panel active" id="panel-crypto">
         <div class="info-box fade-up">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          <p>Send crypto to any address below. Your wallet will be credited once the transaction is confirmed on-chain. Contact support after sending.</p>
+          <p>Send crypto to any address below then submit your transaction hash. Your wallet will be credited within 24 hours after confirmation.</p>
         </div>
 
         <!-- TON -->
@@ -166,6 +166,26 @@
             <div class="warning-box">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ff4d6a" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
               <p>Only send TON on the TON Network. Sending on a wrong network will result in permanent loss of funds.</p>
+            </div>
+
+            <!-- TON Verification Form -->
+            <div class="verify-form">
+              <div class="verify-form-title">Submit Transaction Details</div>
+              <div class="field">
+                <label>Amount Sent (TON)</label>
+                <input id="tonAmount" type="number" placeholder="e.g. 10.5" step="0.01" min="0">
+              </div>
+              <div class="field">
+                <label>Transaction Hash</label>
+                <input id="tonHash" type="text" placeholder="Paste your TX hash here">
+              </div>
+              <button class="btn btn-primary" onclick="submitCryptoRequest('TON')" style="margin-top:8px">
+                Submit for Verification
+              </button>
+              <div class="info-box" style="margin-top:14px">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <p>Your wallet will be credited within 24 hours after we confirm your transaction on-chain.</p>
+              </div>
             </div>
           </div>
         </div>
@@ -195,10 +215,41 @@
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ff4d6a" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
               <p>This address supports USDT on Ethereum, BNB Chain and Base only. Do not send on other networks.</p>
             </div>
+
+            <!-- USDT Verification Form -->
+            <div class="verify-form">
+              <div class="verify-form-title">Submit Transaction Details</div>
+              <div class="field">
+                <label>Amount Sent (USDT)</label>
+                <input id="usdtAmount" type="number" placeholder="e.g. 50.00" step="0.01" min="0">
+              </div>
+              <div class="field">
+                <label>Network Used</label>
+                <select id="usdtNetwork" style="width:100%;padding:14px 16px;border-radius:12px;
+                  border:1px solid var(--border-bright);background:var(--surface2);
+                  color:var(--text);font-size:14px;">
+                  <option value="">Select network</option>
+                  <option value="Ethereum">Ethereum</option>
+                  <option value="BNB Chain">BNB Chain</option>
+                  <option value="Base">Base</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Transaction Hash</label>
+                <input id="usdtHash" type="text" placeholder="Paste your TX hash here">
+              </div>
+              <button class="btn btn-primary" onclick="submitCryptoRequest('USDT')" style="margin-top:8px">
+                Submit for Verification
+              </button>
+              <div class="info-box" style="margin-top:14px">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <p>Your wallet will be credited within 24 hours after we confirm your transaction on-chain.</p>
+              </div>
+            </div>
           </div>
         </div>
 
-        <p class="section-note">After sending, contact support with your transaction hash to get credited.</p>
+        <p class="section-note">All crypto deposits are verified manually within 24 hours.</p>
       </div>
 
       <!-- BANK TRANSFER PANEL -->
@@ -213,8 +264,6 @@
             <svg class="payment-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
           <div class="payment-body">
-
-            <!-- Account details -->
             <div class="bank-detail-row">
               <span class="bank-detail-label">Bank</span>
               <span class="bank-detail-value">Moniepoint MFB</span>
@@ -231,7 +280,6 @@
               <span class="bank-detail-value">Festac Wallet</span>
             </div>
 
-            <!-- Steps -->
             <div class="steps">
               <div class="step">
                 <div class="step-num">1</div>
@@ -251,10 +299,8 @@
               </div>
             </div>
 
-            <!-- Verification Form -->
             <div class="verify-form">
               <div class="verify-form-title">Submit Transfer Details</div>
-
               <div class="field">
                 <label>Amount Sent (₦)</label>
                 <input id="fundAmount" type="number" placeholder="e.g. 15000" min="500">
@@ -271,20 +317,17 @@
                 <label>Transaction Reference / Narration</label>
                 <input id="fundReference" type="text" placeholder="e.g. TRF/2024/123456">
               </div>
-
               <button class="btn btn-primary" onclick="submitFundRequest()" style="margin-top:8px">
                 Submit for Verification
               </button>
-
               <div class="info-box" style="margin-top:14px">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                <p>Your wallet will be credited within 30 minutes after verification. Minimum transfer is ₦15,000.</p>
+                <p>Your wallet will be credited within 24 hours after verification. Minimum transfer is ₦15,000.</p>
               </div>
             </div>
-
           </div>
         </div>
-        <p class="section-note">Transfers are processed manually. Allow up to <b style="color:var(--text)">30 minutes</b> during business hours.</p>
+        <p class="section-note">Transfers are processed manually. Allow up to <b style="color:var(--text)">24 hours</b>.</p>
       </div>
 
       <!-- FROM FRIEND PANEL -->
@@ -422,6 +465,39 @@
         navigator.share({ title: "Pay me on Festac", text });
       } else {
         navigator.clipboard.writeText(text).then(() => showToast("Link copied!", "success"));
+      }
+    }
+
+    async function submitCryptoRequest(coin) {
+      const amount = document.getElementById(coin.toLowerCase() + "Amount")?.value;
+      const hash = document.getElementById(coin.toLowerCase() + "Hash")?.value;
+      const network = coin === "USDT"
+        ? document.getElementById("usdtNetwork")?.value
+        : "TON Network";
+
+      if (!amount || !hash) return showToast("Please fill in all fields", "error");
+      if (coin === "USDT" && !network) return showToast("Please select a network", "error");
+
+      try {
+        const res = await fetch(`${API}/api/wallet/crypto-request`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getToken()}`
+          },
+          body: JSON.stringify({ coin, amount, hash, network })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast("Submitted! We'll credit you within 24 hours", "success");
+          document.getElementById(coin.toLowerCase() + "Amount").value = "";
+          document.getElementById(coin.toLowerCase() + "Hash").value = "";
+          if (coin === "USDT") document.getElementById("usdtNetwork").value = "";
+        } else {
+          showToast(data.message || "Submission failed", "error");
+        }
+      } catch (err) {
+        showToast("Connection error", "error");
       }
     }
 
