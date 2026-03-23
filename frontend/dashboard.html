@@ -7,8 +7,8 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#c9a84c">
   <link rel="stylesheet" href="css/style.css">
+
   <style>
-    /* ===== Dark Theme Base ===== */
     body, .page {
       background-color: #0a0a0a;
       color: #fff;
@@ -16,9 +16,7 @@
       margin: 0;
       padding: 0;
     }
-    a { color: #c9a84c; text-decoration: none; }
 
-    /* ===== Top Header ===== */
     .top-header {
       display: flex;
       justify-content: space-between;
@@ -27,19 +25,26 @@
       background: #121212;
       border-bottom: 1px solid #222;
     }
-    .greeting-text { font-size: 14px; color: #aaa; }
-    .greeting-name { font-size: 18px; font-weight: 700; color: #fff; }
 
-    /* ===== Balance Card ===== */
+    .greeting-text { font-size: 14px; color: #aaa; }
+    .greeting-name { font-size: 18px; font-weight: 700; }
+
     .balance-card {
       background: #1a1a1a;
       margin: 20px;
       padding: 20px;
       border-radius: 12px;
     }
+
     .balance-label { font-size: 12px; color: #aaa; }
-    .balance-amount { font-size: 28px; font-weight: 700; color: #fff; margin: 8px 0; }
-    .balance-footer { display: flex; gap: 10px; margin-top: 12px; }
+    .balance-amount { font-size: 28px; font-weight: 700; margin: 8px 0; }
+
+    .balance-footer {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
     .bal-action-btn {
       flex: 1;
       padding: 10px;
@@ -47,22 +52,27 @@
       font-weight: 700;
       cursor: pointer;
       border: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
     }
-    .bal-action-btn.gold { background: #c9a84c; color: #000; }
-    .bal-action-btn.outline { background: #121212; border: 1px solid #c9a84c; color: #c9a84c; }
 
-    /* ===== Quick Actions ===== */
-    .quick-actions { display: flex; justify-content: space-between; padding: 0 20px; margin: 20px 0; }
+    .gold { background: #c9a84c; color: #000; }
+    .outline {
+      background: #121212;
+      border: 1px solid #c9a84c;
+      color: #c9a84c;
+    }
+
+    .quick-actions {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 20px;
+      margin: 20px 0;
+    }
+
     .quick-btn {
       flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 4px;
       padding: 10px;
       border-radius: 12px;
       background: rgba(201,168,76,0.15);
@@ -70,124 +80,133 @@
       font-size: 12px;
       cursor: pointer;
     }
-    .quick-btn:hover { background: rgba(201,168,76,0.25); }
-    .quick-icon svg { stroke: #c9a84c; width: 24px; height: 24px; }
 
-    /* ===== Admin Button ===== */
     #adminBtn {
       display: none;
-      width: 100%;
+      width: calc(100% - 40px);
+      margin: 10px 20px 20px;
       padding: 14px;
-      margin: 0 20px 16px;
-      border-radius: 12px;
+      border-radius: 14px;
       background: rgba(201,168,76,0.2);
       color: #c9a84c;
-      border: 1px solid rgba(201,168,76,0.3);
+      border: 1px solid rgba(201,168,76,0.35);
       font-weight: 700;
       cursor: pointer;
       text-align: center;
     }
 
-    /* ===== Recent Transactions ===== */
     .section { padding: 0 20px 20px; }
-    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .section-title { font-weight: 700; font-size: 16px; }
-    .tx-list { display: flex; flex-direction: column; gap: 12px; }
 
-    /* ===== Bottom Nav ===== */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
     .bottom-nav {
       position: fixed;
       bottom: 0;
       width: 100%;
       display: flex;
       justify-content: space-around;
-      align-items: center;
       background: #121212;
       padding: 8px 0;
       border-top: 1px solid #222;
     }
-    .nav-item, .nav-item-center {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+
+    .nav-item {
       font-size: 12px;
       color: #888;
-      text-align: center;
       cursor: pointer;
-      border: none;
-      background: none;
     }
-    .nav-item.active { color: #c9a84c; }
-    .nav-item-center svg { stroke: #c9a84c; width: 36px; height: 36px; }
 
-    /* ===== Toast ===== */
-    .toast { position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%); background: #222; color: #fff; padding: 12px 20px; border-radius: 12px; display: none; }
+    .nav-item.active { color: #c9a84c; }
   </style>
 </head>
+
 <body>
-  <div class="page has-nav">
+<div class="page">
 
-    <!-- Top Header -->
-    <div class="top-header">
-      <div>
-        <div class="greeting-text">Good day,</div>
-        <div class="greeting-name" id="greetingName">Loading...</div>
-      </div>
-    </div>
-
-    <!-- Balance Card -->
-    <div class="balance-card">
-      <div class="balance-label">Wallet Balance</div>
-      <div class="balance-amount" id="balance">$0.00</div>
-      <div class="balance-footer">
-        <button class="bal-action-btn gold" onclick="goFund()">Fund</button>
-        <button class="bal-action-btn outline" onclick="goSend()">Send</button>
-      </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="quick-actions">
-      <button class="quick-btn" onclick="goSend()"><div class="quick-icon">✉️</div><span class="quick-label">Send</span></button>
-      <button class="quick-btn" onclick="goFund()"><div class="quick-icon">💰</div><span class="quick-label">Add Money</span></button>
-      <button class="quick-btn" onclick="goTransactions()"><div class="quick-icon">📜</div><span class="quick-label">History</span></button>
-      <button class="quick-btn" onclick="window.location='setpin.html'"><div class="quick-icon">🔒</div><span class="quick-label">Set PIN</span></button>
-    </div>
-
-    <!-- Admin Panel Button -->
-    <button id="adminBtn" onclick="goAdmin()">⚙️ Admin Panel</button>
-
-    <!-- Recent Transactions -->
-    <div class="section">
-      <div class="section-header">
-        <span class="section-title">Recent Transactions</span>
-        <a href="transaction.html" class="section-link">See all</a>
-      </div>
-      <div id="recentList" class="tx-list"></div>
+  <!-- Header -->
+  <div class="top-header">
+    <div>
+      <div class="greeting-text">Good day,</div>
+      <div class="greeting-name" id="greetingName"></div>
     </div>
   </div>
 
-  <!-- Bottom Nav -->
-  <nav class="bottom-nav">
-    <div class="nav-item active" onclick="window.location='dashboard.html'">🏠<span>Home</span></div>
-    <div class="nav-item" onclick="window.location='transaction.html'">📜<span>History</span></div>
-    <div class="nav-item-center" onclick="window.location='send.html'">✉️</div>
-    <div class="nav-item" onclick="window.location='fund.html'">💰<span>Fund</span></div>
-    <div class="nav-item" onclick="logout()">🚪<span>Logout</span></div>
-  </nav>
+  <!-- Balance -->
+  <div class="balance-card">
+    <div class="balance-label">Wallet Balance</div>
+    <div class="balance-amount" id="balance">$0.00</div>
 
-  <div id="toast" class="toast"></div>
+    <div class="balance-footer">
+      <button class="bal-action-btn gold" onclick="goFund()">Fund</button>
+      <button class="bal-action-btn outline" onclick="goSend()">Send</button>
+    </div>
+  </div>
 
-  <script src="js/app.js"></script>
-  <script>
-    // Load user info and admin panel
-    function loadUserInfo() {
-      const token = getToken();
-      if (!token) return;
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      document.getElementById("greetingName").textContent = payload.name || payload.email;
-      if(payload.role === "admin") document.getElementById("adminBtn").style.display = "block";
+  <!-- Quick Actions -->
+  <div class="quick-actions">
+    <button class="quick-btn" onclick="goSend()">✉️ Send</button>
+    <button class="quick-btn" onclick="goFund()">💰 Add Money</button>
+    <button class="quick-btn" onclick="goTransactions()">📜 History</button>
+    <button class="quick-btn" onclick="window.location='setpin.html'">🔒 Set PIN</button>
+  </div>
+
+  <!-- Admin Panel -->
+  <button id="adminBtn" onclick="goAdmin()">⚙️ Admin Panel</button>
+
+  <!-- Transactions -->
+  <div class="section">
+    <div class="section-header">
+      <span>Recent Transactions</span>
+      <a href="transaction.html">See all</a>
+    </div>
+    <div id="recentList"></div>
+  </div>
+
+</div>
+
+<!-- Bottom Nav -->
+<nav class="bottom-nav">
+  <div class="nav-item active" onclick="window.location='dashboard.html'">🏠 Home</div>
+  <div class="nav-item" onclick="window.location='transaction.html'">📜 History</div>
+  <div class="nav-item" onclick="window.location='send.html'">✉️ Send</div>
+  <div class="nav-item" onclick="window.location='fund.html'">💰 Fund</div>
+  <div class="nav-item" onclick="logout()">🚪 Logout</div>
+</nav>
+
+<script src="js/app.js"></script>
+
+<script>
+function loadUserInfo() {
+  const token = getToken();
+  const nameEl = document.getElementById("greetingName");
+
+  if (!token) {
+    nameEl.textContent = "Guest";
+    return;
+  }
+
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+
+    // Show name instantly
+    nameEl.textContent = payload.name || payload.email || "User";
+
+    // Show admin button
+    if (payload.role === "admin") {
+      document.getElementById("adminBtn").style.display = "block";
     }
-    loadUserInfo();
-  </script>
+
+  } catch (e) {
+    nameEl.textContent = "User";
+  }
+}
+
+loadUserInfo();
+</script>
+
 </body>
 </html>
