@@ -1,5 +1,5 @@
 // ===== CONFIG =====
-const API = "https://festac-app0x.onrender.com"; // change if needed
+const API = "https://festac-app0x.onrender.com";
 
 // ===== TOKEN HELPERS =====
 function getToken() {
@@ -13,6 +13,23 @@ function setToken(token) {
 function logout() {
   localStorage.removeItem("token");
   window.location = "index.html";
+}
+
+// ===== NAVIGATION =====
+function goFund() {
+  window.location = "fund.html";
+}
+
+function goSend() {
+  window.location = "send.html";
+}
+
+function goTransactions() {
+  window.location = "transaction.html";
+}
+
+function goAdmin() {
+  window.location = "admin.html";
 }
 
 // ===== UI HELPERS =====
@@ -66,19 +83,87 @@ async function login() {
     } else {
       showToast(data.message || "Login failed", "error");
     }
-  } catch (err) {
+  } catch {
     showToast("Connection error", "error");
   }
 
   showLoading(false);
 }
 
-// ===== SEND MONEY FLOW =====
+// ===== BALANCE =====
+async function loadBalance() {
+  const el = document.getElementById("balance");
+  if (!el) return;
+
+  try {
+    const res = await fetch(`${API}/api/wallet/balance`, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`
+      }
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      el.textContent = `$${data.balance.toFixed(2)}`;
+    }
+  } catch {
+    showToast("Failed to load balance", "error");
+  }
+}
+
+// ===== TRANSACTIONS =====
+async function loadTransactions() {
+  const list = document.getElementById("recentList");
+  if (!list) return;
+
+  try {
+    const res = await fetch(`${API}/api/wallet/transactions`, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`
+      }
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) throw new Error();
+
+    if (!data.length) {
+      list.innerHTML = `<p style="text-align:center;color:#888;">No transactions yet</p>`;
+      return;
+    }
+
+    list.innerHTML = data.slice(0, 5).map(tx => {
+      const isSent = tx.type === "send";
+
+      return `
+        <div class="tx-item">
+          <div>
+            <div class="tx-title">
+              ${isSent ? "Sent to" : "Received from"} ${tx.email}
+            </div>
+            <div class="tx-date">
+              ${new Date(tx.createdAt).toLocaleString()}
+            </div>
+          </div>
+          <div class="tx-amount ${isSent ? "neg" : "pos"}">
+            ${isSent ? "-" : "+"}$${tx.amount.toFixed(2)}
+          </div>
+        </div>
+      `;
+    }).join("");
+
+  } catch {
+    showToast("Failed to load transactions", "error");
+  }
+}
+
+// ===== SEND MONEY =====
 let sendData = {};
 
 function openPinModal() {
-  const email = document.getElementById("toEmail").value.trim();
-  const amount = parseFloat(document.getElementById("amount").value);
+  const email = document.getElementById("toEmail")?.value.trim();
+  const amount = parseFloat(document.getElementById("amount")?.value);
 
   if (!email || !amount) {
     return showToast("Fill all fields", "error");
@@ -123,111 +208,42 @@ async function confirmSend() {
     if (res.ok) {
       showToast("Transfer successful", "success");
       closeModal();
-
-      document.getElementById("toEmail").value = "";
-      document.getElementById("amount").value = "";
-      document.getElementById("pinInput").value = "";
     } else {
       showToast(data.message || "Transfer failed", "error");
     }
+
   } catch {
     showToast("Connection error", "error");
   }
 }
 
-// ===== TRANSACTIONS =====
-async function loadTransactions() {
-  const list = document.getElementById("list");
-  if (!list) return;
+// ===== PROFILE PICTURE =====
+function loadProfilePic() {
+  const img = document.getElementById("profilePic");
+  const saved = localStorage.getItem("profilePic");
 
-  try {
-    const res = await fetch(`${API}/api/wallet/transactions`, {
-      headers: {
-        Authorization: `Bearer ${getToken()}`
-      }
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) throw new Error();
-
-    if (!data.length) {
-      list.innerHTML = `<p style="text-align:center;color:#888;">No transactions yet</p>`;
-      return;
-    }
-
-    list.innerHTML = data.map(tx => {
-      const isSent = tx.type === "send";
-
-      return `
-        <div class="tx-item">
-          <div>
-            <div class="tx-title">
-              ${isSent ? "Sent to" : "Received from"} ${tx.email}
-            </div>
-            <div class="tx-date">
-              ${new Date(tx.createdAt).toLocaleString()}
-            </div>
-          </div>
-          <div class="tx-amount ${isSent ? "neg" : "pos"}">
-            ${isSent ? "-" : "+"}$${tx.amount.toFixed(2)}
-          </div>
-        </div>
-      `;
-    }).join("");
-  } catch {
-    showToast("Failed to load transactions", "error");
+  if (saved && img) {
+    img.src = saved;
   }
 }
 
-// ===== FUND REQUEST (BANK) =====
-async function submitFundRequest() {
-  const amount = document.getElementById("fundAmount").value;
-  const senderName = document.getElementById("fundSenderName").value;
-  const senderBank = document.getElementById("fundSenderBank").value;
-  const reference = document.getElementById("fundReference").value;
+document.getElementById("uploadPic")?.addEventListener("change", function () {
+  const file = this.files[0];
+  if (!file) return;
 
-  if (!amount || !senderName || !senderBank || !reference) {
-    return showToast("Fill all fields", "error");
-  }
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    localStorage.setItem("profilePic", e.target.result);
+    loadProfilePic();
+    showToast("Profile updated", "success");
+  };
 
-  if (amount < 15000) {
-    return showToast("Minimum is ₦15,000", "error");
-  }
+  reader.readAsDataURL(file);
+});
 
-  try {
-    const res = await fetch(`${API}/api/wallet/fund-request`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${getToken()}`
-      },
-      body: JSON.stringify({
-        amount,
-        senderName,
-        senderBank,
-        reference
-      })
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      showToast("Submitted! Await verification", "success");
-
-      document.getElementById("fundAmount").value = "";
-      document.getElementById("fundSenderName").value = "";
-      document.getElementById("fundSenderBank").value = "";
-      document.getElementById("fundReference").value = "";
-    } else {
-      showToast(data.message || "Failed", "error");
-    }
-  } catch {
-    showToast("Connection error", "error");
-  }
-}
-
-// ===== AUTO LOADERS =====
+// ===== INIT =====
 document.addEventListener("DOMContentLoaded", () => {
+  loadBalance();
   loadTransactions();
+  loadProfilePic();
 });
