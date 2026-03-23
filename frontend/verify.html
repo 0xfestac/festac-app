@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Festac — Verify Transaction</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#c9a84c">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .verify-hero {
+      text-align: center;
+      padding: 32px 20px 20px;
+    }
+    .verify-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 20px;
+      background: var(--gold-dim);
+      border: 1px solid rgba(201,168,76,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+    }
+    .verify-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      background: var(--gold-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 6px;
+    }
+    .verify-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .search-box {
+      padding: 0 20px;
+      margin-bottom: 24px;
+    }
+    .search-row {
+      display: flex;
+      gap: 10px;
+    }
+    .search-row input {
+      flex: 1;
+      font-family: monospace;
+      font-size: 13px;
+    }
+    .search-btn {
+      padding: 14px 18px;
+      border-radius: var(--radius-sm);
+      background: var(--gold-gradient);
+      border: none;
+      color: #0a0a0a;
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      width: auto;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .search-btn:active { transform: scale(0.97); }
+
+    .result-card {
+      margin: 0 20px;
+      display: none;
+    }
+    .result-card.show { display: block; }
+
+    .result-status {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .status-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: rgba(0,201,122,0.12);
+      border: 2px solid rgba(0,201,122,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .status-text {
+      font-family: 'Syne', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      color: #00c97a;
+    }
+
+    .tx-detail-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      position: relative;
+    }
+    .tx-detail-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0,201,122,0.4), transparent);
+    }
+
+    .tx-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .tx-row:last-child { border-bottom: none; }
+    .tx-row-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .tx-row-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      text-align: right;
+      max-width: 60%;
+      word-break: break-all;
+    }
+    .tx-row-value.gold { color: var(--gold); }
+    .tx-row-value.green { color: #00c97a; }
+    .tx-row-value.amount {
+      font-size: 20px;
+      color: var(--gold);
+    }
+
+    .tx-id-box {
+      background: var(--surface2);
+      border: 1px solid var(--border-bright);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .tx-id-text {
+      font-family: monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      flex: 1;
+      word-break: break-all;
+      line-height: 1.5;
+    }
+
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-family: 'Syne', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .role-sender {
+      background: var(--danger-dim);
+      color: var(--danger);
+      border: 1px solid rgba(255,77,106,0.3);
+    }
+    .role-receiver {
+      background: rgba(0,201,122,0.12);
+      color: #00c97a;
+      border: 1px solid rgba(0,201,122,0.3);
+    }
+
+    .not-found {
+      text-align: center;
+      padding: 40px 20px;
+      display: none;
+    }
+    .not-found.show { display: block; }
+    .not-found svg { opacity: 0.3; margin-bottom: 12px; }
+    .not-found p { font-size: 14px; color: var(--text-muted); }
+    .not-found small { font-size: 12px; color: var(--text-muted); opacity: 0.7; margin-top: 6px; display: block; }
+
+    .share-btn {
+      width: calc(100% - 40px);
+      margin: 16px 20px 0;
+      padding: 13px;
+      border-radius: var(--radius-sm);
+      background: var(--surface2);
+      border: 1px solid var(--border-bright);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: none;
+    }
+    .share-btn.show { display: block; }
+    .share-btn:hover { border-color: rgba(201,168,76,0.3); }
+  </style>
+</head>
+<body>
+  <div class="page has-nav">
+    <div class="page-header fade-up">
+      <a href="dashboard.html" class="back-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8a7e6e" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </a>
+      <h2>Transaction Verify</h2>
+      <img src="icon.png" class="page-logo" alt="Festac">
+    </div>
+
+    <div class="verify-hero fade-up">
+      <div class="verify-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+      </div>
+      <div class="verify-title">FestacScan</div>
+      <p class="verify-sub">Enter a transaction ID to verify<br>a Festac-to-Festac transfer</p>
+    </div>
+
+    <!-- Search -->
+    <div class="search-box fade-up">
+      <div class="search-row">
+        <input id="txInput" type="text" placeholder="Enter transaction ID...">
+        <button class="search-btn" onclick="verifyTx()">Verify</button>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div class="result-card" id="resultCard">
+      <div class="result-status">
+        <div class="status-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00c97a" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div>
+          <div class="status-text">Confirmed</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Transaction verified on Festac network</div>
+        </div>
+      </div>
+
+      <div class="tx-detail-card">
+        <div class="tx-row">
+          <span class="tx-row-label">Amount</span>
+          <span class="tx-row-value amount" id="txAmount">—</span>
+        </div>
+        <div class="tx-row">
+          <span class="tx-row-label">Your Role</span>
+          <span class="tx-row-value" id="txRole">—</span>
+        </div>
+        <div class="tx-row">
+          <span class="tx-row-label">From</span>
+          <span class="tx-row-value" id="txFrom">—</span>
+        </div>
+        <div class="tx-row">
+          <span class="tx-row-label">To</span>
+          <span class="tx-row-value" id="txTo">—</span>
+        </div>
+        <div class="tx-row">
+          <span class="tx-row-label">Date & Time</span>
+          <span class="tx-row-value" id="txDate">—</span>
+        </div>
+        <div class="tx-row">
+          <span class="tx-row-label">Status</span>
+          <span class="tx-row-value green">✓ Confirmed</span>
+        </div>
+        <div class="tx-row">
+          <span class="tx-row-label">Network</span>
+          <span class="tx-row-value gold">Festac Network</span>
+        </div>
+      </div>
+
+      <div class="tx-id-box">
+        <div>
+          <div style="font-size:10px;color:var(--text-muted);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:4px">Transaction ID</div>
+          <div class="tx-id-text" id="txIdDisplay">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Not found -->
+    <div class="not-found" id="notFound">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="display:block;margin:0 auto 12px">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <p>Transaction not found</p>
+      <small>This transaction ID doesn't exist or you are not authorized to view it</small>
+    </div>
+
+    <!-- Share button -->
+    <button class="share-btn" id="shareBtn" onclick="shareTx()">
+      Share Transaction Receipt
+    </button>
+
+  </div>
+
+  <!-- Bottom Nav -->
+  <nav class="bottom-nav">
+    <a href="dashboard.html" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#5a5248" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Home</span>
+    </a>
+    <a href="transaction.html" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#5a5248" stroke-width="2" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      <span>History</span>
+    </a>
+    <a href="send.html" class="nav-item-center">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </a>
+    <a href="fund.html" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#5a5248" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      <span>Fund</span>
+    </a>
+  </nav>
+
+  <div id="toast" class="toast"></div>
+  <script src="js/app.js"></script>
+  <script>
+    let currentTx = null;
+
+    async function verifyTx() {
+      const txId = document.getElementById("txInput").value.trim();
+      if (!txId) return showToast("Enter a transaction ID", "error");
+
+      document.getElementById("resultCard").classList.remove("show");
+      document.getElementById("notFound").classList.remove("show");
+      document.getElementById("shareBtn").classList.remove("show");
+
+      try {
+        const res = await fetch(API + "/api/wallet/verify/" + txId, {
+          headers: { Authorization: "Bearer " + getToken() }
+        });
+
+        if (res.ok) {
+          const tx = await res.json();
+          currentTx = tx;
+          renderResult(tx);
+        } else {
+          document.getElementById("notFound").classList.add("show");
+        }
+      } catch (err) {
+        showToast("Connection error", "error");
+      }
+    }
+
+    function renderResult(tx) {
+      const date = new Date(tx.date).toLocaleString("en-GB", {
+        day: "numeric", month: "short", year: "numeric",
+        hour: "2-digit", minute: "2-digit"
+      });
+
+      document.getElementById("txAmount").textContent = "$" + parseFloat(tx.amount).toFixed(2);
+      document.getElementById("txFrom").textContent = tx.from || "—";
+      document.getElementById("txTo").textContent = tx.to || "—";
+      document.getElementById("txDate").textContent = date;
+      document.getElementById("txIdDisplay").textContent = tx.txId;
+
+      const roleEl = document.getElementById("txRole");
+      if (tx.role === "sender") {
+        roleEl.innerHTML = '<span class="role-badge role-sender">↑ Sender</span>';
+      } else {
+        roleEl.innerHTML = '<span class="role-badge role-receiver">↓ Receiver</span>';
+      }
+
+      document.getElementById("resultCard").classList.add("show");
+      document.getElementById("shareBtn").classList.add("show");
+    }
+
+    function shareTx() {
+      if (!currentTx) return;
+      const text = "Festac Transaction Receipt\n" +
+        "Amount: $" + parseFloat(currentTx.amount).toFixed(2) + "\n" +
+        "From: " + (currentTx.from || "—") + "\n" +
+        "To: " + (currentTx.to || "—") + "\n" +
+        "Status: Confirmed\n" +
+        "TX ID: " + currentTx.txId + "\n" +
+        "Verified on FestacScan";
+
+      if (navigator.share) {
+        navigator.share({ title: "Festac Receipt", text });
+      } else {
+        navigator.clipboard.writeText(text).then(() => showToast("Receipt copied!", "success"));
+      }
+    }
+  </script>
+</body>
+</html>
