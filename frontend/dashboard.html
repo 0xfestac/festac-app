@@ -1,192 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Festac — Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#c9a84c">
-  <link rel="stylesheet" href="css/style.css">
+<meta charset="UTF-8">
+<title>Festac — Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    body, .page {
-      background-color: #0a0a0a;
-      color: #fff;
-      font-family: 'Syne', sans-serif;
-      margin: 0;
-      padding: 0;
-    }
+<link rel="stylesheet" href="css/style.css">
 
-    .top-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 16px 20px;
-      background: #121212;
-      border-bottom: 1px solid #222;
-    }
+<style>
+body { background:#0a0a0a; color:#fff; font-family:sans-serif; margin:0; }
 
-    .greeting-text { font-size: 14px; color: #aaa; }
-    .greeting-name { font-size: 18px; font-weight: 700; }
+.top-header {
+  display:flex; align-items:center;
+  padding:16px 20px; background:#121212;
+}
 
-    .balance-card {
-      background: #1a1a1a;
-      margin: 20px;
-      padding: 20px;
-      border-radius: 12px;
-    }
+.balance-card {
+  background:#1a1a1a; margin:20px;
+  padding:20px; border-radius:12px;
+}
 
-    .balance-label { font-size: 12px; color: #aaa; }
-    .balance-amount { font-size: 28px; font-weight: 700; margin: 8px 0; }
+.balance-amount { font-size:28px; font-weight:bold; }
 
-    .balance-footer {
-      display: flex;
-      gap: 10px;
-      margin-top: 12px;
-    }
-
-    .bal-action-btn {
-      flex: 1;
-      padding: 10px;
-      border-radius: 10px;
-      font-weight: 700;
-      cursor: pointer;
-      border: none;
-    }
-
-    .gold { background: #c9a84c; color: #000; }
-    .outline {
-      background: #121212;
-      border: 1px solid #c9a84c;
-      color: #c9a84c;
-    }
-
-    .quick-actions {
-      display: flex;
-      justify-content: space-between;
-      padding: 0 20px;
-      margin: 20px 0;
-    }
-
-    .quick-btn {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 10px;
-      border-radius: 12px;
-      background: rgba(201,168,76,0.15);
-      color: #c9a84c;
-      font-size: 12px;
-      cursor: pointer;
-    }
-
-    #adminBtn {
-      display: none;
-      width: calc(100% - 40px);
-      margin: 10px 20px 20px;
-      padding: 14px;
-      border-radius: 14px;
-      background: rgba(201,168,76,0.2);
-      color: #c9a84c;
-      border: 1px solid rgba(201,168,76,0.35);
-      font-weight: 700;
-      cursor: pointer;
-      text-align: center;
-    }
-
-    .section { padding: 0 20px 20px; }
-
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 12px;
-    }
-     
-    .section-link {
-      color: #c9a84c;
-      text-decoration: none;
-      font-weight: 600;
-    }
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      display: flex;
-      justify-content: space-around;
-      background: #121212;
-      padding: 8px 0;
-      border-top: 1px solid #222;
-    }
-
-    .nav-item {
-      font-size: 12px;
-      color: #888;
-      cursor: pointer;
-    }
-
-    .nav-item.active { color: #c9a84c; }
-  </style>
+.bottom-nav {
+  position:fixed; bottom:0; width:100%;
+  display:flex; justify-content:space-around;
+  background:#121212; padding:8px 0;
+}
+</style>
 </head>
 
 <body>
-<div class="page">
 
-  <!-- Header -->
-  <div class="top-header">
-    <div>
-      <div class="greeting-text">Good day,</div>
-      <div class="greeting-name" id="greetingName"></div>
-    </div>
+<!-- HEADER WITH PROFILE -->
+<div class="top-header">
+  <img id="profilePic"
+       src="https://via.placeholder.com/40"
+       style="width:40px;height:40px;border-radius:50%;margin-right:10px;" />
+
+  <div>
+    <div>Good day,</div>
+    <div id="greetingName"></div>
   </div>
-
-  <!-- Balance -->
-  <div class="balance-card">
-    <div class="balance-label">Wallet Balance</div>
-    <div class="balance-amount" id="balance">$0.00</div>
-
-    <div class="balance-footer">
-      <button class="bal-action-btn gold" onclick="goFund()">Fund</button>
-      <button class="bal-action-btn outline" onclick="goSend()">Send</button>
-    </div>
-  </div>
-
-  <!-- Quick Actions -->
-  <div class="quick-actions">
-    <button class="quick-btn" onclick="goSend()">✉️ Send</button>
-    <button class="quick-btn" onclick="goFund()">💰 Add Money</button>
-    <button class="quick-btn" onclick="goTransactions()">📜 History</button>
-    <button class="quick-btn" onclick="window.location='setpin.html'">🔒 Set PIN</button>
-  </div>
-
-  <!-- Admin Panel -->
-  <button id="adminBtn" onclick="goAdmin()">⚙️ Admin Panel</button>
-
-  <!-- Transactions -->
-  <div class="section">
-    <div class="section-header">
-      <span>Recent Transactions</span>
-      <a href="transaction.html">See all</a>
-    </div>
-    <div id="recentList"></div>
-  </div>
-
 </div>
 
-<!-- Bottom Nav -->
-<nav class="bottom-nav">
-  <div class="nav-item active" onclick="window.location='dashboard.html'">🏠 Home</div>
-  <div class="nav-item" onclick="window.location='transaction.html'">📜 History</div>
-  <div class="nav-item" onclick="window.location='send.html'">✉️ Send</div>
-  <div class="nav-item" onclick="window.location='fund.html'">💰 Fund</div>
-  <div class="nav-item" onclick="logout()">🚪 Logout</div>
-</nav>
+<!-- UPLOAD -->
+<input type="file" id="uploadPic" accept="image/*" style="margin:10px;">
+
+<!-- BALANCE -->
+<div class="balance-card">
+  <div>Wallet Balance</div>
+  <div id="balance">$0.00</div>
+
+  <button onclick="goFund()">Fund</button>
+  <button onclick="goSend()">Send</button>
+</div>
+
+<!-- ADMIN -->
+<button id="adminBtn" style="display:none;" onclick="goAdmin()">Admin Panel</button>
+
+<!-- TRANSACTIONS -->
+<div>
+  <h3>Recent Transactions</h3>
+  <div id="recentList"></div>
+</div>
+
+<!-- NAV -->
+<div class="bottom-nav">
+  <div onclick="location='dashboard.html'">Home</div>
+  <div onclick="location='transaction.html'">History</div>
+  <div onclick="location='send.html'">Send</div>
+  <div onclick="location='fund.html'">Fund</div>
+  <div onclick="logout()">Logout</div>
+</div>
 
 <script src="js/app.js"></script>
 
 <script>
 function loadUserInfo() {
-  const token = getToken();
+  const token = localStorage.getItem("token");
   const nameEl = document.getElementById("greetingName");
 
   if (!token) {
@@ -196,16 +88,12 @@ function loadUserInfo() {
 
   try {
     const payload = JSON.parse(atob(token.split('.')[1]));
+    nameEl.textContent = payload.name || payload.email;
 
-    // Show name instantly
-    nameEl.textContent = payload.name || payload.email || "User";
-
-    // Show admin button
     if (payload.role === "admin") {
       document.getElementById("adminBtn").style.display = "block";
     }
-
-  } catch (e) {
+  } catch {
     nameEl.textContent = "User";
   }
 }
