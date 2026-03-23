@@ -114,4 +114,31 @@ router.get("/fund-requests", auth, async (req, res) => {
   }
 });
 
+router.post("/crypto-request", auth, async (req, res) => {
+  try {
+    const { coin, amount, hash, network } = req.body;
+    if (!coin || !amount || !hash || !network) {
+      return res.status(400).json({ message: "All fields required" });
+    }
+    const amt = parseFloat(amount);
+    if (isNaN(amt) || amt <= 0) return res.status(400).json({ message: "Invalid amount" });
+    const user = await User.findById(req.user.id);
+    const request = new FundRequest({
+      userId: user._id,
+      userEmail: user.email,
+      userName: user.name,
+      amount: amt,
+      senderName: hash,
+      senderBank: network,
+      reference: `${coin} — ${hash}`,
+      status: "pending"
+    });
+    await request.save();
+    res.json({ message: "Crypto request submitted successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 module.exports = router;
