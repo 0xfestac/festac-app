@@ -444,7 +444,7 @@ async function submitFundRequest() {
     });
     const data = await res.json();
     if (res.ok) {
-      showToast("Submitted! We'll credit you within 30 mins", "success");
+      showToast("Submitted! We'll credit you within 24 hrs", "success");
       document.getElementById("fundAmount").value = "";
       document.getElementById("fundSenderName").value = "";
       document.getElementById("fundSenderBank").value = "";
