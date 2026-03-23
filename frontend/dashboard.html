@@ -255,14 +255,19 @@
 
 <script>
   // ── Balance hide/show ──────────────────────────────
-  let balanceHidden = false;
   let realBalance = "$0.00";
+let balanceHidden = localStorage.getItem("balanceHidden") === "true";
 
-  function toggleBalance() {
-    balanceHidden = !balanceHidden;
-    document.getElementById("balance").textContent = balanceHidden ? "••••••" : realBalance;
-    document.getElementById("eyeBtn").textContent = balanceHidden ? "🙈" : "👁️";
-  }
+function toggleBalance() {
+  balanceHidden = !balanceHidden;
+  localStorage.setItem("balanceHidden", balanceHidden);
+  applyBalanceState();
+}
+
+function applyBalanceState() {
+  document.getElementById("balance").textContent = balanceHidden ? "••••••" : realBalance;
+  document.getElementById("eyeBtn").textContent = balanceHidden ? "🙈" : "👁️";
+}
 
   // ── Toast ─────────────────────────────────────────
   function showToast(msg) {
@@ -308,21 +313,21 @@
 
   // ── Balance — uses API from app.js, syncs with eye toggle ──
   async function loadBalance() {
-    const el = document.getElementById("balance");
-    if (!el) return;
-    try {
-      const res = await fetch(`${API}/api/wallet/balance`, {
-        headers: { Authorization: `Bearer ${getToken()}` }
-      });
-      const data = await res.json();
-      if (res.ok) {
-        realBalance = "$" + Number(data.balance).toFixed(2);
-        el.textContent = realBalance;
-      }
-    } catch (err) {
-      console.log("Balance error:", err);
+  const el = document.getElementById("balance");
+  if (!el) return;
+  try {
+    const res = await fetch(`${API}/api/wallet/balance`, {
+      headers: { Authorization: `Bearer ${getToken()}` }
+    });
+    const data = await res.json();
+    if (res.ok) {
+      realBalance = "$" + Number(data.balance).toFixed(2);
+      applyBalanceState();
     }
+  } catch (err) {
+    console.log("Balance error:", err);
   }
+}
 
   loadUserInfo();
   loadBalance();
