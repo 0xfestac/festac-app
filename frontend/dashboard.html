@@ -7,28 +7,51 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#c9a84c">
   <link rel="stylesheet" href="css/style.css">
-  <style>
-    /* Admin Cards & Buttons */
-    #adminCard { display:none; margin:20px; }
-    .request-card {
-      border:1px solid #ccc; border-radius:10px; padding:12px; margin-bottom:12px;
-      font-family:'Syne',sans-serif;
-    }
-    .req-header { display:flex; justify-content:space-between; }
-    .req-actions { display:flex; gap:8px; margin-top:8px; }
-    .btn-approve { flex:1; padding:8px; background:#00c97a22; border:1px solid #00c97a; cursor:pointer; }
-    .btn-reject { flex:1; padding:8px; background:#ff4d6a22; border:1px solid #ff4d6a; cursor:pointer; }
-    .filter-tabs { display:flex; gap:8px; margin-bottom:12px; }
-    .filter-tab { padding:6px 12px; border-radius:20px; border:1px solid #ccc; cursor:pointer; font-size:12px; }
-    .filter-tab.active { background:#c9a84c22; border-color:#c9a84c; color:#c9a84c; }
-  </style>
 </head>
 <body>
   <div class="page has-nav">
-    <!-- Existing Dashboard HTML Above -->
 
-    <!-- Admin Panel Button -->
-    <div style="padding: 0 20px;">
+    <!-- Top Header -->
+    <div class="top-header fade-up">
+      <div class="header-left">
+        <label class="avatar-wrap" title="Change photo">
+          <img id="avatarImg" src="icon.png" class="avatar" alt="Profile">
+          <div class="avatar-overlay"></div>
+          <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="changeAvatar(event)">
+        </label>
+        <div>
+          <div class="greeting-text">Good day,</div>
+          <div class="greeting-name" id="greetingName">Loading...</div>
+        </div>
+      </div>
+      <div class="notif-btn"></div>
+    </div>
+
+    <!-- Balance Card -->
+    <div class="balance-card fade-up">
+      <div class="balance-label">Wallet Balance</div>
+      <div class="balance-row">
+        <div class="balance-amount">
+          <span class="currency">$</span><span id="balance">0.00</span>
+        </div>
+        <button class="balance-toggle" onclick="toggleBalance()" id="balanceToggle"></button>
+      </div>
+      <div class="balance-footer">
+        <button class="bal-action-btn gold" onclick="goFund()">Fund</button>
+        <button class="bal-action-btn outline" onclick="goSend()">Send</button>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <button class="quick-btn" onclick="goSend()">Send</button>
+      <button class="quick-btn" onclick="goFund()">Add Money</button>
+      <button class="quick-btn" onclick="goTransactions()">History</button>
+      <button class="quick-btn" onclick="window.location='setpin.html'">Set PIN</button>
+    </div>
+
+    <!-- Admin Panel Button (only for admins) -->
+    <div style="padding:0 20px;">
       <button id="adminBtn" onclick="goAdmin()" style="display:none;
         width:100%;padding:14px;border-radius:12px;margin-bottom:16px;
         background:rgba(201,168,76,0.1);color:#c9a84c;
@@ -38,19 +61,7 @@
       </button>
     </div>
 
-    <!-- Admin Fund Requests -->
-    <div id="adminCard">
-      <h3>Admin — Fund Requests</h3>
-      <div class="filter-tabs">
-        <button class="filter-tab active" onclick="filterRequests('all', this)">All</button>
-        <button class="filter-tab" onclick="filterRequests('pending', this)">Pending</button>
-        <button class="filter-tab" onclick="filterRequests('approved', this)">Approved</button>
-        <button class="filter-tab" onclick="filterRequests('rejected', this)">Rejected</button>
-      </div>
-      <div id="requestsList"></div>
-    </div>
-
-    <!-- Recent Transactions HTML Below -->
+    <!-- Recent Transactions -->
     <div class="section fade-up">
       <div class="section-header">
         <span class="section-title">Recent Transactions</span>
@@ -58,113 +69,42 @@
       </div>
       <div id="recentList" class="tx-list"></div>
     </div>
+
   </div>
 
-  <!-- Bottom Nav & Toast -->
+  <!-- Bottom Nav -->
   <nav class="bottom-nav">
-    <!-- Existing nav items -->
+    <a href="dashboard.html" class="nav-item active">Home</a>
+    <a href="transaction.html" class="nav-item">History</a>
+    <a href="send.html" class="nav-item-center"></a>
+    <a href="fund.html" class="nav-item">Fund</a>
+    <button class="nav-item" onclick="logout()">Logout</button>
   </nav>
+
   <div id="toast" class="toast"></div>
 
   <script src="js/app.js"></script>
   <script>
-    const API = "https://your-backend.com"; // replace with your backend URL
-    let allRequests = [];
-    let currentFilter = "all";
-
+    // Show admin button if user is admin
     function loadAdminUI() {
       const token = getToken();
       if (!token) return;
+
       try {
         const payload = JSON.parse(atob(token.split(".")[1]));
         if (payload.role === "admin") {
           document.getElementById("adminBtn").style.display = "block";
-          document.getElementById("adminCard").style.display = "block";
-          loadRequests();
         }
-      } catch {}
-    }
-
-    async function loadRequests() {
-      try {
-        const res = await fetch(`${API}/admin/fund-requests`, {
-          headers: { Authorization: `Bearer ${getToken()}` }
-        });
-        if (!res.ok) { showToast("Failed to load requests","error"); return; }
-        allRequests = await res.json();
-        renderRequests(currentFilter);
-      } catch { showToast("Connection error","error"); }
-    }
-
-    function filterRequests(filter, btn) {
-      currentFilter = filter;
-      document.querySelectorAll(".filter-tab").forEach(t => t.classList.remove("active"));
-      btn.classList.add("active");
-      renderRequests(filter);
-    }
-
-    function renderRequests(filter) {
-      const list = document.getElementById("requestsList");
-      const filtered = filter === "all" ? allRequests : allRequests.filter(r => r.status === filter);
-      if (!filtered.length) {
-        list.innerHTML = `<div style="padding:12px;color:#999;">No ${filter === "all" ? "" : filter} requests</div>`;
-        return;
+      } catch(e) {
+        console.error("Invalid token", e);
       }
-      list.innerHTML = filtered.map(req => {
-        const date = new Date(req.createdAt).toLocaleString("en-GB", {day:"numeric", month:"short", hour:"2-digit", minute:"2-digit"});
-        const actions = req.status==="pending"? `
-          <div class="req-actions">
-            <button class="btn-approve" onclick="approveRequest('${req._id}')">Approve</button>
-            <button class="btn-reject" onclick="rejectRequest('${req._id}')">Reject</button>
-          </div>` : "";
-        return `
-          <div class="request-card">
-            <div class="req-header">
-              <div>
-                <div style="font-weight:700;">${req.userName}</div>
-                <div style="font-size:12px;color:#555;">${req.userEmail}</div>
-              </div>
-              <div style="text-align:right;">
-                <div style="font-weight:800; font-size:16px;">₦${req.amount.toLocaleString()}</div>
-                <div style="font-size:11px; color:${req.status==='approved'? '#00c97a': req.status==='rejected'? '#ff4d6a':'#c9a84c'}">${req.status}</div>
-              </div>
-            </div>
-            <div style="font-size:11px;color:#888;margin-top:4px;">${date}</div>
-            ${actions}
-          </div>`;
-      }).join("");
     }
 
-    async function approveRequest(id) {
-      const usdAmount = prompt("Enter USD amount to credit the user:");
-      if (usdAmount===null) return;
-      if (!usdAmount||isNaN(usdAmount)||parseFloat(usdAmount)<=0){ showToast("Invalid amount entered","error"); return; }
-      try {
-        const res = await fetch(`${API}/admin/fund-requests/${id}/approve`, {
-          method:"POST",
-          headers:{"Content-Type":"application/json", Authorization:`Bearer ${getToken()}`},
-          body: JSON.stringify({ usdAmount: parseFloat(usdAmount) })
-        });
-        const data = await res.json();
-        if (res.ok){ showToast("Approved! Wallet credited","success"); loadRequests(); }
-        else showToast(data.message||"Failed","error");
-      } catch { showToast("Connection error","error"); }
+    function goAdmin() {
+      window.location = "admin.html";
     }
 
-    async function rejectRequest(id){
-      const note = prompt("Reason for rejection (optional):");
-      try{
-        const res = await fetch(`${API}/admin/fund-requests/${id}/reject`, {
-          method:"POST",
-          headers:{"Content-Type":"application/json", Authorization:`Bearer ${getToken()}`},
-          body:JSON.stringify({ note: note||"" })
-        });
-        const data = await res.json();
-        if(res.ok){ showToast("Request rejected","error"); loadRequests(); }
-        else showToast(data.message||"Failed","error");
-      }catch{ showToast("Connection error","error"); }
-    }
-
+    // Call on page load
     loadAdminUI();
   </script>
 </body>
