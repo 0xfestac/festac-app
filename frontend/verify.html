@@ -397,6 +397,16 @@
         navigator.clipboard.writeText(text).then(() => showToast("Receipt copied!", "success"));
       }
     }
+
+// Auto fill if coming from transactions page
+window.addEventListener("load", () => {
+  const saved = localStorage.getItem("verifyTx");
+  if (saved) {
+    document.getElementById("txInput").value = saved;
+    localStorage.removeItem("verifyTx");
+    verifyTx();
+  }
+});
   </script>
 </body>
 </html>
