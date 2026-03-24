@@ -348,6 +348,101 @@ function loadMyEmail() {
 }
 
 loadMyEmail();
+
+const API = "https://festac-app0x.onrender.com";
+
+function getToken() {
+  return localStorage.getItem("token");
+}
+
+/* =========================
+   CRYPTO REQUEST
+========================= */
+async function submitCryptoRequest(type) {
+  const amount = document.getElementById(type.toLowerCase() + "Amount").value;
+  const hash = document.getElementById(type.toLowerCase() + "Hash").value;
+
+  if (!amount || !hash) {
+    alert("Fill all fields");
+    return;
+  }
+
+  try {
+    const res = await fetch(API + "/fund/crypto", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + getToken()
+      },
+      body: JSON.stringify({
+        type,
+        amount,
+        txHash: hash
+      })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      alert("Request submitted successfully");
+    } else {
+      alert(data.message || "Failed");
+    }
+
+  } catch (err) {
+    alert("Network error");
+    console.error(err);
+  }
+}
+
+/* =========================
+   BANK REQUEST
+========================= */
+async function submitFundRequest() {
+  const amount = document.getElementById("fundAmount").value;
+  const senderName = document.getElementById("fundSenderName").value;
+  const senderBank = document.getElementById("fundSenderBank").value;
+  const reference = document.getElementById("fundReference").value;
+
+  if (!amount || !senderName || !senderBank) {
+    alert("Fill all required fields");
+    return;
+  }
+
+  if (amount < 15000) {
+    alert("Minimum is ₦15,000");
+    return;
+  }
+
+  try {
+    const res = await fetch(API + "/fund/bank", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + getToken()
+      },
+      body: JSON.stringify({
+        amount,
+        senderName,
+        senderBank,
+        reference
+      })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      alert("Submitted for verification");
+    } else {
+      alert(data.message || "Failed");
+    }
+
+  } catch (err) {
+    alert("Network error");
+    console.error(err);
+  }
+}
+
 </script>
 
 </body>
