@@ -261,7 +261,7 @@
       <input id="fundReference" placeholder="Transaction Reference">
 
       <!-- Button -->
-      <button class="btn btn-primary" onclick="submitFundRequest()" style="margin-top:10px;">
+      <button class="btn-primary" onclick="submitFundRequest()" style="margin-top:10px;">
         Submit for Verification
       </button>
 
@@ -316,9 +316,44 @@ function getToken() {
   return localStorage.getItem("token");
 }
 
-/* =========================
-   CRYPTO REQUEST
-========================= */
+// ── Tabs ──
+function switchTab(tab) {
+  document.querySelectorAll(".fund-tab").forEach((t, i) => {
+    t.classList.toggle("active", ["crypto","bank","friend"][i] === tab);
+  });
+  document.querySelectorAll(".fund-panel").forEach(p => p.classList.remove("active"));
+  document.getElementById("panel-" + tab).classList.add("active");
+}
+
+// ── Accordion ──
+function toggleCard(id) {
+  const card = document.getElementById("card-" + id);
+  if (card) card.classList.toggle("open");
+}
+
+// ── Copy ──
+function copyAddress(elId, btn) {
+  const text = document.getElementById(elId)?.textContent?.trim();
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = "Copied!";
+    setTimeout(() => btn.textContent = orig, 2000);
+  });
+}
+
+// ── Load email for friend tab ──
+function loadMyEmail() {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    const el = document.getElementById("myEmail");
+    if (el && payload.email) el.textContent = payload.email;
+  } catch {}
+}
+
+// ── Crypto Request ──
 async function submitCryptoRequest(type) {
   const amount = document.getElementById(type.toLowerCase() + "Amount").value;
   const hash = document.getElementById(type.toLowerCase() + "Hash").value;
@@ -353,9 +388,7 @@ async function submitCryptoRequest(type) {
   }
 }
 
-/* =========================
-   BANK REQUEST
-========================= */
+// ── Bank Request ──
 async function submitFundRequest() {
   const amount = document.getElementById("fundAmount").value;
   const senderName = document.getElementById("fundSenderName").value;
@@ -367,7 +400,7 @@ async function submitFundRequest() {
     return;
   }
 
-  if (amount < 15000) {
+  if (Number(amount) < 15000) {
     alert("Minimum is ₦15,000");
     return;
   }
@@ -398,6 +431,8 @@ async function submitFundRequest() {
     console.error(err);
   }
 }
+
+loadMyEmail();
 </script>
 
 </body>
