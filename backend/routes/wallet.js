@@ -205,4 +205,30 @@ router.get("/verify/:txId", auth, async (req, res) => {
   }
 });
 
+// ✅ SUBMIT CRYPTO FUND REQUEST
+router.post("/crypto-request", auth, async (req, res) => {
+  try {
+    const { type, amount, txHash } = req.body;
+    if (!type || !amount || !txHash) {
+      return res.status(400).json({ message: "All fields required" });
+    }
+    const user = await User.findById(req.user.id);
+    const request = new FundRequest({
+      userId: user._id,
+      userEmail: user.email,
+      userName: user.name,
+      amount: parseFloat(amount),
+      senderName: txHash,
+      senderBank: type + " Network",
+      reference: txHash,
+      status: "pending"
+    });
+    await request.save();
+    res.json({ message: "Crypto request submitted successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 module.exports = router;
