@@ -312,45 +312,6 @@
 <script src="js/app.js"></script>
 
 <script>
-function switchTab(tab) {
-  document.querySelectorAll(".fund-tab").forEach((t, i) => {
-    t.classList.toggle("active", ["crypto","bank","friend"][i] === tab);
-  });
-
-  document.querySelectorAll(".fund-panel").forEach(p => p.classList.remove("active"));
-  document.getElementById("panel-" + tab).classList.add("active");
-}
-
-function toggleCard(id) {
-  const card = document.getElementById("card-" + id);
-  if (!card) return;
-
-  document.querySelectorAll(".payment-card").forEach(c => {
-    if (c !== card) c.classList.remove("open");
-  });
-
-  card.classList.toggle("open");
-}
-
-function copyAddress(id, btn) {
-  const text = document.getElementById(id).textContent;
-  navigator.clipboard.writeText(text);
-  btn.innerText = "Copied";
-  setTimeout(() => btn.innerText = "Copy", 1500);
-}
-
-function loadMyEmail() {
-  try {
-    const token = localStorage.getItem("token");
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    document.getElementById("myEmail").textContent = payload.email;
-  } catch {}
-}
-
-loadMyEmail();
-
-const API = "https://festac-app0x.onrender.com";
-
 function getToken() {
   return localStorage.getItem("token");
 }
@@ -368,27 +329,24 @@ async function submitCryptoRequest(type) {
   }
 
   try {
-    const res = await fetch(API + "/fund/crypto", {
+    const res = await fetch(API + "/api/wallet/crypto-request", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": "Bearer " + getToken()
       },
-      body: JSON.stringify({
-        type,
-        amount,
-        txHash: hash
-      })
+      body: JSON.stringify({ type, amount, txHash: hash })
     });
 
     const data = await res.json();
 
     if (res.ok) {
-      alert("Request submitted successfully");
+      alert("✅ Request submitted! We'll verify and credit your wallet within 24 hrs.");
+      document.getElementById(type.toLowerCase() + "Amount").value = "";
+      document.getElementById(type.toLowerCase() + "Hash").value = "";
     } else {
       alert(data.message || "Failed");
     }
-
   } catch (err) {
     alert("Network error");
     console.error(err);
@@ -415,34 +373,31 @@ async function submitFundRequest() {
   }
 
   try {
-    const res = await fetch(API + "/fund/bank", {
+    const res = await fetch(API + "/api/wallet/fund-request", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": "Bearer " + getToken()
       },
-      body: JSON.stringify({
-        amount,
-        senderName,
-        senderBank,
-        reference
-      })
+      body: JSON.stringify({ amount, senderName, senderBank, reference })
     });
 
     const data = await res.json();
 
     if (res.ok) {
-      alert("Submitted for verification");
+      alert("✅ Submitted for verification! We'll credit your wallet within 24 hrs.");
+      document.getElementById("fundAmount").value = "";
+      document.getElementById("fundSenderName").value = "";
+      document.getElementById("fundSenderBank").value = "";
+      document.getElementById("fundReference").value = "";
     } else {
       alert(data.message || "Failed");
     }
-
   } catch (err) {
     alert("Network error");
     console.error(err);
   }
 }
-
 </script>
 
 </body>
