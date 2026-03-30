@@ -6,6 +6,7 @@ const auth = require("../middleware/auth");
 const mongoose = require("mongoose");
 const FundRequest = require("../models/FundRequest");
 
+// ✅ GET BALANCE
 router.get("/balance", auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
@@ -15,6 +16,7 @@ router.get("/balance", auth, async (req, res) => {
   }
 });
 
+// ✅ FUND WALLET
 router.post("/fund", auth, async (req, res) => {
   try {
     const { amount } = req.body;
@@ -30,6 +32,7 @@ router.post("/fund", auth, async (req, res) => {
   }
 });
 
+// ✅ SEND MONEY
 router.post("/send", auth, async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -69,6 +72,7 @@ router.post("/send", auth, async (req, res) => {
   }
 });
 
+// ✅ TRANSACTIONS
 router.get("/transactions", auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
@@ -78,10 +82,11 @@ router.get("/transactions", auth, async (req, res) => {
   }
 });
 
+// ✅ BANK FUND REQUEST
 router.post("/fund-request", auth, async (req, res) => {
   try {
     const { amount, senderName, senderBank, reference } = req.body;
-    if (!amount || !senderName || !senderBank || !reference) {
+    if (!amount || !senderName || !senderBank) {
       return res.status(400).json({ message: "All fields required" });
     }
     const amt = parseFloat(amount);
@@ -94,7 +99,7 @@ router.post("/fund-request", auth, async (req, res) => {
       amount: amt,
       senderName,
       senderBank,
-      reference,
+      reference: reference || "N/A",
       status: "pending"
     });
     await request.save();
@@ -105,6 +110,7 @@ router.post("/fund-request", auth, async (req, res) => {
   }
 });
 
+// ✅ GET USER FUND REQUESTS
 router.get("/fund-requests", auth, async (req, res) => {
   try {
     const requests = await FundRequest.find({ userId: req.user.id }).sort({ createdAt: -1 });
@@ -114,10 +120,11 @@ router.get("/fund-requests", auth, async (req, res) => {
   }
 });
 
+// ✅ CRYPTO FUND REQUEST
 router.post("/crypto-request", auth, async (req, res) => {
   try {
-    const { coin, amount, hash, network } = req.body;
-    if (!coin || !amount || !hash || !network) {
+    const { type, amount, txHash } = req.body;
+    if (!type || !amount || !txHash) {
       return res.status(400).json({ message: "All fields required" });
     }
     const amt = parseFloat(amount);
@@ -128,9 +135,9 @@ router.post("/crypto-request", auth, async (req, res) => {
       userEmail: user.email,
       userName: user.name,
       amount: amt,
-      senderName: hash,
-      senderBank: network,
-      reference: `${coin} — ${hash}`,
+      senderName: txHash,
+      senderBank: type + " Network",
+      reference: type + " — " + txHash,
       status: "pending"
     });
     await request.save();
@@ -146,48 +153,30 @@ router.get("/verify/:txId", auth, async (req, res) => {
   try {
     const { txId } = req.params;
     const user = await User.findById(req.user.id);
-
-    // Search in user's own transactions first
     let tx = user.transactions.id(txId);
     let role = tx ? (tx.type === "debit" ? "sender" : "receiver") : null;
-
-    // If not found search all users
     if (!tx) {
-      const allUsers = await User.find({
-        "transactions._id": txId
-      });
-
+      const allUsers = await User.find({ "transactions._id": txId });
       for (const u of allUsers) {
         const found = u.transactions.id(txId);
         if (found) {
-          // Check if logged in user is sender or receiver
           if (found.type === "debit" && u._id.toString() === req.user.id) {
-            tx = found;
-            role = "sender";
-            break;
+            tx = found; role = "sender"; break;
           }
           if (found.type === "credit") {
-            // Check if logged in user is the receiver
             if (u._id.toString() === req.user.id) {
-              tx = found;
-              role = "receiver";
-              break;
+              tx = found; role = "receiver"; break;
             }
-            // Check if logged in user is the sender
             if (found.from === user.email) {
-              tx = found;
-              role = "sender";
-              break;
+              tx = found; role = "sender"; break;
             }
           }
         }
       }
     }
-
     if (!tx) {
-      return res.status(404).json({ message: "Transaction not found or you are not authorized to view it" });
+      return res.status(404).json({ message: "Transaction not found or you are not authorized" });
     }
-
     res.json({
       txId: tx._id,
       type: tx.type,
@@ -198,33 +187,6 @@ router.get("/verify/:txId", auth, async (req, res) => {
       status: "confirmed",
       role
     });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-// ✅ SUBMIT CRYPTO FUND REQUEST
-router.post("/crypto-request", auth, async (req, res) => {
-  try {
-    const { type, amount, txHash } = req.body;
-    if (!type || !amount || !txHash) {
-      return res.status(400).json({ message: "All fields required" });
-    }
-    const user = await User.findById(req.user.id);
-    const request = new FundRequest({
-      userId: user._id,
-      userEmail: user.email,
-      userName: user.name,
-      amount: parseFloat(amount),
-      senderName: txHash,
-      senderBank: type + " Network",
-      reference: txHash,
-      status: "pending"
-    });
-    await request.save();
-    res.json({ message: "Crypto request submitted successfully" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
